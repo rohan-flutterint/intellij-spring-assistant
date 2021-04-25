@@ -1,6 +1,7 @@
 package in.oneton.idea.spring.assistant.plugin.suggestion.completion;
 
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.github.eltonsandre.plugin.idea.spring.assistant.common.Constants;
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.lang.properties.psi.impl.PropertyKeyImpl;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.util.TextRange;
@@ -21,10 +22,12 @@ import in.oneton.idea.spring.assistant.plugin.misc.GenericUtil;
 import in.oneton.idea.spring.assistant.plugin.suggestion.SuggestionNode;
 import in.oneton.idea.spring.assistant.plugin.suggestion.service.SuggestionService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 
 import static in.oneton.idea.spring.assistant.plugin.misc.GenericUtil.truncateIdeaDummyIdentifier;
 import static in.oneton.idea.spring.assistant.plugin.misc.PsiCustomUtil.findModule;
@@ -66,40 +69,37 @@ public class PropertiesReferenceContributor extends PsiReferenceContributor {
         @Override
         public ResolveResult @NotNull [] multiResolve(final boolean incompleteCode) {
 
-            final var project = this.myElement.getProject();
-
-            final PsiFile file = this.myElement.getContainingFile();
-
-            final var service = project.getService(SuggestionService.class);
+            final Module module = findModule(this.myElement);
+            if (Objects.isNull(module)) {
+                return new ResolveResult[0];
+            }
 
             final String value = this.myElement.getText();
-
-            final Module module = findModule(this.myElement);
-
             final List<String> ancestralKey = GenericUtil.getAncestralKey(value);
 
             if (CollectionUtils.isEmpty(ancestralKey)) {
                 return new ResolveResult[0];
             }
 
-            final List<SuggestionNode> matchedNodesFromRootTillLeaf =
-                    service.findMatchedNodesRootTillEnd(module, ancestralKey);
+            final List<SuggestionNode> matchedNodesFromRootTillLeaf = SuggestionService.getInstance(module)
+                    .findMatchedNodesRootTillEnd(ancestralKey);
 
-            if (matchedNodesFromRootTillLeaf != null) {
-
-                final SuggestionNode target = matchedNodesFromRootTillLeaf.get(matchedNodesFromRootTillLeaf.size() - 1);
-
-                final String targetNavigationPathDotDelimited =
-                        matchedNodesFromRootTillLeaf.stream().map(v -> v.getNameForDocumentation(module))
-                                .collect(joining("."));
-
-                final ReferenceProxyElement element = new ReferenceProxyElement(file.getManager(), file.getLanguage(),
-                        targetNavigationPathDotDelimited, target, value);
-
-                return new ResolveResult[]{new PsiElementResolveResult(element)};
+            if (Objects.isNull(matchedNodesFromRootTillLeaf)) {
+                return new ResolveResult[0];
             }
 
-            return new ResolveResult[0];
+            final SuggestionNode target = matchedNodesFromRootTillLeaf.get(matchedNodesFromRootTillLeaf.size() - 1);
+
+            final String targetNavigationPathDotDelimited = matchedNodesFromRootTillLeaf
+                    .stream()
+                    .map(v -> v.getNameForDocumentation(module))
+                    .collect(joining("."));
+
+            final PsiFile file = this.myElement.getContainingFile();
+            final ReferenceProxyElement element = new ReferenceProxyElement(file.getManager(), file.getLanguage(),
+                    targetNavigationPathDotDelimited, target, value);
+
+            return new ResolveResult[]{new PsiElementResolveResult(element)};
         }
 
         @Nullable
@@ -112,32 +112,27 @@ public class PropertiesReferenceContributor extends PsiReferenceContributor {
         @NotNull
         @Override
         public Object @NotNull [] getVariants() {
-
-            final var project = this.myElement.getProject();
-
-            final var service = project.getService(SuggestionService.class);
-
             final Module module = findModule(this.myElement);
+            if (Objects.isNull(module)) {
+                return ArrayUtil.EMPTY_OBJECT_ARRAY;
+            }
+
+            final var service = SuggestionService.getInstance(module);
 
             final String origin = truncateIdeaDummyIdentifier(this.myElement);
-
-            final int pos = origin.lastIndexOf(".");
+            final int pos = origin.lastIndexOf(Constants.PROP_DOT);
 
             String queryWithDotDelimitedPrefixes = origin;
-
             if (pos != -1) {
                 if (pos == origin.length() - 1) {
-                    queryWithDotDelimitedPrefixes = "";
+                    queryWithDotDelimitedPrefixes = StringUtils.EMPTY;
                 } else {
                     queryWithDotDelimitedPrefixes = origin.substring(pos + 1);
                 }
             }
 
-            final List<LookupElementBuilder> suggestions =
-                    service.findSuggestionsForQueryPrefix(module,
-                            FileType.PROPERTIES, this.myElement,
-                            GenericUtil.getAncestralKey(origin), queryWithDotDelimitedPrefixes,
-                            null);
+            final List<LookupElement> suggestions = service.findSuggestionsForQueryPrefix( FileType.PROPERTIES, this.myElement,
+                    GenericUtil.getAncestralKey(origin), queryWithDotDelimitedPrefixes, null);
 
             if (suggestions != null) {
                 return suggestions.toArray();
@@ -145,6 +140,6 @@ public class PropertiesReferenceContributor extends PsiReferenceContributor {
             return ArrayUtil.EMPTY_OBJECT_ARRAY;
         }
 
-
     }
+
 }

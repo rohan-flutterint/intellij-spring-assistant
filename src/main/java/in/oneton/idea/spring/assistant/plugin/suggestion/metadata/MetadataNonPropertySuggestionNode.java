@@ -19,6 +19,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Trie;
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.jetbrains.annotations.NotNull;
@@ -156,37 +157,37 @@ public class MetadataNonPropertySuggestionNode extends MetadataSuggestionNode {
      * @param belongsTo    file/jar containing this property
      * @return newly constructed group node
      */
-    public static MetadataNonPropertySuggestionNode newInstance(String originalName,
-                                                                @Nullable MetadataNonPropertySuggestionNode parent, String belongsTo) {
-        MetadataNonPropertySuggestionNodeBuilder builder =
+    public static MetadataNonPropertySuggestionNode newInstance(final String originalName,
+                                                                @Nullable final MetadataNonPropertySuggestionNode parent, final String belongsTo) {
+        final MetadataNonPropertySuggestionNodeBuilder builder =
                 MetadataNonPropertySuggestionNode.builder().name(SuggestionNode.sanitise(originalName))
                         .originalName(originalName).parent(parent);
-        Set<String> belongsToSet = new THashSet<>();
+        final Set<String> belongsToSet = new THashSet<>();
         belongsToSet.add(belongsTo);
         builder.belongsTo(belongsToSet);
         return builder.build();
     }
 
     @Override
-    public MetadataSuggestionNode findDeepestMetadataNode(String[] pathSegments, int pathSegmentStartIndex, boolean matchAllSegments) {
+    public MetadataSuggestionNode findDeepestMetadataNode(final String[] pathSegments, final int pathSegmentStartIndex, final boolean matchAllSegments) {
 
         MetadataSuggestionNode deepestMatch = null;
         if (!matchAllSegments) {
             deepestMatch = this;
         }
 
-        boolean haveMoreSegments = pathSegmentStartIndex < pathSegments.length;
+        final boolean haveMoreSegments = pathSegmentStartIndex < pathSegments.length;
         if (!haveMoreSegments) {
             return deepestMatch;
         }
 
-        boolean lastSegment = pathSegmentStartIndex == (pathSegments.length - 1);
-        String pathSegment = pathSegments[pathSegmentStartIndex];
+        final boolean lastSegment = pathSegmentStartIndex == (pathSegments.length - 1);
+        final String pathSegment = pathSegments[pathSegmentStartIndex];
 
-        if (hasChildren()) {
-            assert childLookup != null;
-            if (childLookup.containsKey(pathSegment)) {
-                MetadataSuggestionNode child = childLookup.get(pathSegment);
+        if (this.hasChildren()) {
+            assert this.childLookup != null;
+            if (this.childLookup.containsKey(pathSegment)) {
+                final MetadataSuggestionNode child = this.childLookup.get(pathSegment);
                 if (lastSegment) {
                     deepestMatch = child;
                 } else {
@@ -198,7 +199,7 @@ public class MetadataNonPropertySuggestionNode extends MetadataSuggestionNode {
                 }
             }
 
-        } else if (lastSegment && name.equals(pathSegment)) {
+        } else if (lastSegment && this.name.equals(pathSegment)) {
             deepestMatch = this;
         }
         return deepestMatch;
@@ -207,17 +208,17 @@ public class MetadataNonPropertySuggestionNode extends MetadataSuggestionNode {
 
     @Nullable
     @Override
-    public List<SuggestionNode> findDeepestSuggestionNode(Module module,
-                                                          List<SuggestionNode> matchesRootTillMe, String[] pathSegments, int pathSegmentStartIndex) {
+    public List<SuggestionNode> findDeepestSuggestionNode(final Module module,
+                                                          final List<SuggestionNode> matchesRootTillMe, final String[] pathSegments, final int pathSegmentStartIndex) {
         List<SuggestionNode> deepestMatch = null;
-        boolean haveMoreSegments = pathSegmentStartIndex < pathSegments.length;
+        final boolean haveMoreSegments = pathSegmentStartIndex < pathSegments.length;
         if (haveMoreSegments) {
-            String currentPathSegment = pathSegments[pathSegmentStartIndex];
-            boolean lastSegment = pathSegmentStartIndex == (pathSegments.length - 1);
-            if (hasChildren()) {
-                assert childLookup != null;
-                if (childLookup.containsKey(currentPathSegment)) {
-                    MetadataSuggestionNode child = childLookup.get(currentPathSegment);
+            final String currentPathSegment = pathSegments[pathSegmentStartIndex];
+            final boolean lastSegment = pathSegmentStartIndex == (pathSegments.length - 1);
+            if (this.hasChildren()) {
+                assert this.childLookup != null;
+                if (this.childLookup.containsKey(currentPathSegment)) {
+                    final MetadataSuggestionNode child = this.childLookup.get(currentPathSegment);
                     matchesRootTillMe.add(child);
                     if (lastSegment) {
                         deepestMatch = matchesRootTillMe;
@@ -226,7 +227,7 @@ public class MetadataNonPropertySuggestionNode extends MetadataSuggestionNode {
                                 pathSegmentStartIndex + 1);
                     }
                 }
-            } else if (lastSegment && name.equals(currentPathSegment)) {
+            } else if (lastSegment && this.name.equals(currentPathSegment)) {
                 deepestMatch = matchesRootTillMe;
             }
         } else {
@@ -236,23 +237,23 @@ public class MetadataNonPropertySuggestionNode extends MetadataSuggestionNode {
         return deepestMatch;
     }
 
-    public void addChildren(Module module, SpringConfigurationMetadataGroup group,
-                            String[] rawPathSegments, int startIndex, String belongsTo) {
-        MetadataNonPropertySuggestionNode groupNode =
-                addChildren(rawPathSegments, startIndex, rawPathSegments.length - 1, belongsTo);
+    public void addChildren(final Module module, final SpringConfigurationMetadataGroup group,
+                            final String[] rawPathSegments, final int startIndex, final String belongsTo) {
+        final MetadataNonPropertySuggestionNode groupNode =
+                this.addChildren(rawPathSegments, startIndex, rawPathSegments.length - 1, belongsTo);
         groupNode.setGroup(module, group);
     }
 
-    public void addChildren(SpringConfigurationMetadataProperty property, String[] rawPathSegments,
-                            int startIndex, String belongsTo) {
-        MetadataNonPropertySuggestionNode parentNode;
+    public void addChildren(final SpringConfigurationMetadataProperty property, final String[] rawPathSegments,
+                            final int startIndex, final String belongsTo) {
+        final MetadataNonPropertySuggestionNode parentNode;
         // since last property is the actual property, lets only add children only till last but one
-        int endIndexIncl = rawPathSegments.length - 2;
+        final int endIndexIncl = rawPathSegments.length - 2;
         if (startIndex <= endIndexIncl) {
-            parentNode = addChildren(rawPathSegments, startIndex, endIndexIncl, belongsTo);
+            parentNode = this.addChildren(rawPathSegments, startIndex, endIndexIncl, belongsTo);
         } else {
             parentNode = this;
-            addRefCascadeTillRoot(belongsTo);
+            this.addRefCascadeTillRoot(belongsTo);
         }
 
         parentNode.addProperty(property, rawPathSegments[rawPathSegments.length - 1], belongsTo);
@@ -260,18 +261,18 @@ public class MetadataNonPropertySuggestionNode extends MetadataSuggestionNode {
 
     @Override
     @Nullable
-    public SortedSet<Suggestion> findKeySuggestionsForQueryPrefix(final Module module, FileType fileType,
+    public SortedSet<Suggestion> findKeySuggestionsForQueryPrefix(final Module module, final FileType fileType,
                                                                   final List<SuggestionNode> matchesRootTillMe,
-                                                                  final int numOfAncestors, String[] querySegmentPrefixes,
-                                                                  int querySegmentPrefixStartIndex,
+                                                                  final int numOfAncestors, final String[] querySegmentPrefixes,
+                                                                  final int querySegmentPrefixStartIndex,
                                                                   @Nullable final Set<String> siblingsToExclude) {
 
-        boolean lookingForConcreteNode = querySegmentPrefixStartIndex >= querySegmentPrefixes.length;
+        final boolean lookingForConcreteNode = querySegmentPrefixStartIndex >= querySegmentPrefixes.length;
         if (lookingForConcreteNode) {
-            return lookingForConcreteNode(module, fileType, matchesRootTillMe, numOfAncestors, querySegmentPrefixes, querySegmentPrefixStartIndex);
+            return this.lookingForConcreteNode(module, fileType, matchesRootTillMe, numOfAncestors, querySegmentPrefixes, querySegmentPrefixStartIndex);
 
-        } else if (hasChildren()) {
-            return getSuggestionsChildren(module, fileType, matchesRootTillMe, numOfAncestors, querySegmentPrefixes, querySegmentPrefixStartIndex, siblingsToExclude);
+        } else if (this.hasChildren()) {
+            return this.getSuggestionsChildren(module, fileType, matchesRootTillMe, numOfAncestors, querySegmentPrefixes, querySegmentPrefixStartIndex, siblingsToExclude);
         }
         return null;
     }
@@ -279,16 +280,16 @@ public class MetadataNonPropertySuggestionNode extends MetadataSuggestionNode {
     private SortedSet<Suggestion> getSuggestionsChildren(final Module module, final FileType fileType, final List<SuggestionNode> matchesRootTillMe,
                                                          final int numOfAncestors, final String[] querySegmentPrefixes, final int querySegmentPrefixStartIndex,
                                                          final @org.jetbrains.annotations.Nullable Set<String> siblingsToExclude) {
-        assert childrenTrie != null;
-        assert childLookup != null;
-        String querySegmentPrefix = querySegmentPrefixes[querySegmentPrefixStartIndex];
-        SortedMap<String, MetadataSuggestionNode> sortedPrefixToMetadataNode =
-                childrenTrie.prefixMap(querySegmentPrefix);
+        assert this.childrenTrie != null;
+        assert this.childLookup != null;
+        final String querySegmentPrefix = querySegmentPrefixes[querySegmentPrefixStartIndex];
+        final SortedMap<String, MetadataSuggestionNode> sortedPrefixToMetadataNode =
+                this.childrenTrie.prefixMap(querySegmentPrefix);
         Collection<MetadataSuggestionNode> matchedChildren = sortedPrefixToMetadataNode.values();
 
         Set<MetadataSuggestionNode> exclusionMembers = null;
         if (siblingsToExclude != null) {
-            exclusionMembers = siblingsToExclude.stream().map(childLookup::get).collect(toSet());
+            exclusionMembers = siblingsToExclude.stream().map(this.childLookup::get).collect(toSet());
         }
 
         if (!isEmpty(exclusionMembers) && !isEmpty(matchedChildren)) {
@@ -300,50 +301,50 @@ public class MetadataNonPropertySuggestionNode extends MetadataSuggestionNode {
 
         int segmentPrefixStartIndex = querySegmentPrefixStartIndex;
         if (matchedChildren.size() == 0) {
-            matchedChildren = computeChildrenToIterateOver(childLookup, exclusionMembers);
+            matchedChildren = this.computeChildrenToIterateOver(this.childLookup, exclusionMembers);
         } else {
             segmentPrefixStartIndex = segmentPrefixStartIndex + 1;
         }
         // lets search in the next level
-        return addChildToMatchesAndSearchInNextLevel(module, fileType, matchesRootTillMe, numOfAncestors,
+        return this.addChildToMatchesAndSearchInNextLevel(module, fileType, matchesRootTillMe, numOfAncestors,
                 querySegmentPrefixes, segmentPrefixStartIndex, matchedChildren);
     }
 
     private SortedSet<Suggestion> lookingForConcreteNode(final Module module, final FileType fileType, final List<SuggestionNode> matchesRootTillMe, final int numOfAncestors, final String[] querySegmentPrefixes, final int querySegmentPrefixStartIndex) {
-        if (isGroup()) {
+        if (this.isGroup()) {
             // If we have only one child, lets send the child value directly instead of this node. This way user does not need trigger suggestion for level, esp. when we know there will is only be one child
-            if (hasOnlyOneChild()) {
-                assert childrenTrie != null;
-                return addChildToMatchesAndSearchInNextLevel(module, fileType, matchesRootTillMe,
+            if (this.hasOnlyOneChild()) {
+                assert this.childrenTrie != null;
+                return this.addChildToMatchesAndSearchInNextLevel(module, fileType, matchesRootTillMe,
                         numOfAncestors, querySegmentPrefixes, querySegmentPrefixStartIndex,
-                        childrenTrie.values());
+                        this.childrenTrie.values());
             } else { // either there are no children/multiple children are present. Lets return suggestions
-                assert group != null;
+                assert this.group != null;
                 return newSingleElementSortedSet(
-                        group.newSuggestion(fileType, matchesRootTillMe, numOfAncestors));
+                        this.group.newSuggestion(fileType, matchesRootTillMe, numOfAncestors));
             }
         } else { // intermediate node, lets get all next level groups & properties
-            assert childrenTrie != null;
-            return addChildToMatchesAndSearchInNextLevel(module, fileType, matchesRootTillMe,
+            assert this.childrenTrie != null;
+            return this.addChildToMatchesAndSearchInNextLevel(module, fileType, matchesRootTillMe,
                     numOfAncestors, querySegmentPrefixes, querySegmentPrefixStartIndex,
-                    childrenTrie.values());
+                    this.childrenTrie.values());
         }
     }
 
     @Override
     protected boolean hasOnlyOneChild() {
-        return childrenTrie != null && childrenTrie.size() == 1;
+        return this.childrenTrie != null && this.childrenTrie.size() == 1;
         //     && childrenTrie.values().stream()
         //        .allMatch(MetadataSuggestionNode::hasOnlyOneChild)
     }
 
     @Override
     public String toTree() {
-        StringBuilder builder = new StringBuilder(originalName)
-                .append(isRoot() ? "(root + group)" : (isGroup() ? "(group)" : "(intermediate)"))
+        final StringBuilder builder = new StringBuilder(this.originalName)
+                .append(this.isRoot() ? "(root + group)" : (this.isGroup() ? "(group)" : "(intermediate)"))
                 .append("\n");
-        if (childLookup != null) {
-            childLookup.forEach(
+        if (this.childLookup != null) {
+            this.childLookup.forEach(
                     (k, v) -> builder.append(v.toTree().trim().replaceAll("\\^", "  ").replaceAll("\n", "\n  "))
                             .append("\n"));
         }
@@ -355,29 +356,29 @@ public class MetadataNonPropertySuggestionNode extends MetadataSuggestionNode {
      * @return true if no children left & this item does not belong to any other source
      */
     @Override
-    public boolean removeRefCascadeDown(String containerPath) {
-        belongsTo.remove(containerPath);
+    public boolean removeRefCascadeDown(final String containerPath) {
+        this.belongsTo.remove(containerPath);
         // If the current node & all its children belong to a single file, lets remove the whole tree
-        if (belongsTo.size() == 0) {
+        if (this.belongsTo.size() == 0) {
             return true;
         }
 
-        if (hasChildren()) {
-            assert childLookup != null;
-            assert childrenTrie != null;
-            Iterator<MetadataSuggestionNode> iterator = childrenTrie.values().iterator();
+        if (this.hasChildren()) {
+            assert this.childLookup != null;
+            assert this.childrenTrie != null;
+            final Iterator<MetadataSuggestionNode> iterator = this.childrenTrie.values().iterator();
             while (iterator.hasNext()) {
-                MetadataSuggestionNode child = iterator.next();
-                boolean canRemoveReference = child.removeRefCascadeDown(containerPath);
+                final MetadataSuggestionNode child = iterator.next();
+                final boolean canRemoveReference = child.removeRefCascadeDown(containerPath);
                 if (canRemoveReference) {
                     iterator.remove();
-                    childLookup.remove(child.getName());
-                    childrenTrie.remove(child.getName());
+                    this.childLookup.remove(child.getName());
+                    this.childrenTrie.remove(child.getName());
                 }
             }
-            if (!hasChildren()) {
-                childLookup = null;
-                childrenTrie = null;
+            if (!this.hasChildren()) {
+                this.childLookup = null;
+                this.childrenTrie = null;
             }
         }
         return false;
@@ -385,12 +386,12 @@ public class MetadataNonPropertySuggestionNode extends MetadataSuggestionNode {
 
     @Override
     protected boolean isRoot() {
-        return parent == null;
+        return this.parent == null;
     }
 
     @Override
     public boolean isGroup() {
-        return group != null;
+        return this.group != null;
     }
 
     @Override
@@ -400,10 +401,10 @@ public class MetadataNonPropertySuggestionNode extends MetadataSuggestionNode {
 
     @NotNull
     @Override
-    public String getDocumentationForKey(Module module, String nodeNavigationPathDotDelimited) {
-        if (isGroup()) {
-            assert group != null;
-            return group.getDocumentation(nodeNavigationPathDotDelimited);
+    public String getDocumentationForKey(final Module module, final String nodeNavigationPathDotDelimited) {
+        if (this.isGroup()) {
+            assert this.group != null;
+            return this.group.getDocumentation(nodeNavigationPathDotDelimited);
         }
         throw new RuntimeException(
                 "Documentation not supported for this element. Call supportsDocumentation() first");
@@ -411,21 +412,21 @@ public class MetadataNonPropertySuggestionNode extends MetadataSuggestionNode {
 
     @Nullable
     @Override
-    public SortedSet<Suggestion> findValueSuggestionsForPrefix(Module module, FileType fileType,
-                                                               List<SuggestionNode> matchesRootTillMe, String prefix,
-                                                               @Nullable Set<String> siblingsToExclude) {
+    public SortedSet<Suggestion> findValueSuggestionsForPrefix(final Module module, final FileType fileType,
+                                                               final List<SuggestionNode> matchesRootTillMe, final String prefix,
+                                                               @Nullable final Set<String> siblingsToExclude) {
         throw new IllegalAccessError("Should never be called");
     }
 
     @Nullable
     @Override
-    public String getDocumentationForValue(Module module, String nodeNavigationPathDotDelimited,
-                                           String originalValue) {
+    public String getDocumentationForValue(final Module module, final String nodeNavigationPathDotDelimited,
+                                           final String originalValue) {
         throw new IllegalAccessError("Should never be called");
     }
 
     @Override
-    public boolean isLeaf(Module module) {
+    public boolean isLeaf(final Module module) {
         return false;
     }
 
@@ -435,106 +436,96 @@ public class MetadataNonPropertySuggestionNode extends MetadataSuggestionNode {
     }
 
     private boolean hasChildren() {
-        return childrenTrie != null && childrenTrie.size() != 0;
+        return this.childrenTrie != null && this.childrenTrie.size() != 0;
     }
 
     @NotNull
     @Override
-    public SuggestionNodeType getSuggestionNodeType(Module module) {
-        if (isGroup()) {
-            assert group != null;
-            return group.getNodeType();
+    public SuggestionNodeType getSuggestionNodeType(final Module module) {
+        if (this.isGroup()) {
+            assert this.group != null;
+            return this.group.getNodeType();
         } else {
             return SuggestionNodeType.UNDEFINED;
         }
     }
 
-    public void setGroup(Module module, SpringConfigurationMetadataGroup group) {
-        updateGroupType(module, group);
+    public void setGroup(final Module module, final SpringConfigurationMetadataGroup group) {
+        this.updateGroupType(module, group);
         this.group = group;
     }
 
     @Override
-    public void refreshClassProxy(Module module) {
-        updateGroupType(module, group);
-        if (hasChildren()) {
-            assert childLookup != null;
-            childLookup.values().forEach(child -> child.refreshClassProxy(module));
+    public void refreshClassProxy(final Module module) {
+        this.updateGroupType(module, this.group);
+        if (this.hasChildren()) {
+            assert this.childLookup != null;
+            this.childLookup.values().forEach(child -> child.refreshClassProxy(module));
         }
     }
 
-    private Collection<MetadataSuggestionNode> computeChildrenToIterateOver(
-            @NotNull Map<String, MetadataSuggestionNode> childLookup,
-            Set<MetadataSuggestionNode> exclusionMembers) {
-        Collection<MetadataSuggestionNode> childrenToIterateOver;
-        if (!isEmpty(exclusionMembers)) {
-            childrenToIterateOver =
-                    childLookup.values().stream().filter(value -> !exclusionMembers.contains(value))
-                            .collect(toList());
+    private Collection<MetadataSuggestionNode> computeChildrenToIterateOver(@NotNull final Map<String, MetadataSuggestionNode> childLookup,
+                                                                            final Set<MetadataSuggestionNode> exclusionMembers) {
+        if (CollectionUtils.isEmpty(exclusionMembers)) {
+            return childLookup.values();
         } else {
-            childrenToIterateOver = childLookup.values();
+            return childLookup.values().stream()
+                    .filter(value -> !exclusionMembers.contains(value))
+                    .collect(toList());
         }
-        return childrenToIterateOver;
     }
 
-    private void addProperty(SpringConfigurationMetadataProperty property, String originalName,
-                             String belongsTo) {
-        addRefCascadeTillRoot(belongsTo);
-        if (!hasChildren()) {
-            childLookup = new THashMap<>();
-            childrenTrie = new PatriciaTrie<>();
+    private void addProperty(final SpringConfigurationMetadataProperty property, final String originalName, final String belongsTo) {
+        this.addRefCascadeTillRoot(belongsTo);
+        if (!this.hasChildren()) {
+            this.childLookup = new THashMap<>();
+            this.childrenTrie = new PatriciaTrie<>();
         }
 
-        assert childLookup != null;
-        assert childrenTrie != null;
-        MetadataSuggestionNode childNode =
-                MetadataPropertySuggestionNode.newInstance(originalName, property, this, belongsTo);
+        assert this.childLookup != null;
+        assert this.childrenTrie != null;
+        final MetadataSuggestionNode childNode = MetadataPropertySuggestionNode.newInstance(originalName, property, this, belongsTo);
 
-        String name = SuggestionNode.sanitise(originalName);
-        childLookup.put(name, childNode);
-        childrenTrie.put(name, childNode);
+        final String nameSanitised = SuggestionNode.sanitise(originalName);
+        this.childLookup.put(nameSanitised, childNode);
+        this.childrenTrie.put(nameSanitised, childNode);
     }
 
-    private MetadataNonPropertySuggestionNode addChildren(String[] rawPathSegments, int startIndex,
-                                                          int endIndexIncl, String belongsTo) {
-        addRefCascadeTillRoot(belongsTo);
-        if (!hasChildren()) {
-            childLookup = new THashMap<>();
-            childrenTrie = new PatriciaTrie<>();
+    private MetadataNonPropertySuggestionNode addChildren(final String[] rawPathSegments, final int startIndex,
+                                                          final int endIndexIncl, final String belongsTo) {
+        this.addRefCascadeTillRoot(belongsTo);
+        if (!this.hasChildren()) {
+            this.childLookup = new THashMap<>();
+            this.childrenTrie = new PatriciaTrie<>();
         }
 
-        assert childLookup != null;
-        assert childrenTrie != null;
+        assert this.childLookup != null;
+        assert this.childrenTrie != null;
 
-        String rawPathSegment = rawPathSegments[startIndex];
-        String pathSegment = SuggestionNode.sanitise(rawPathSegment);
-        MetadataNonPropertySuggestionNode childNode =
-                (MetadataNonPropertySuggestionNode) childLookup.get(pathSegment);
+        final String rawPathSegment = rawPathSegments[startIndex];
+        final String pathSegment = SuggestionNode.sanitise(rawPathSegment);
+
+        var childNode = (MetadataNonPropertySuggestionNode) this.childLookup.get(pathSegment);
         if (childNode == null) {
             childNode = MetadataNonPropertySuggestionNode.newInstance(rawPathSegment, this, belongsTo);
             childNode.setParent(this);
 
-            childLookup.put(pathSegment, childNode);
-            childrenTrie.put(pathSegment, childNode);
+            this.childLookup.put(pathSegment, childNode);
+            this.childrenTrie.put(pathSegment, childNode);
         }
-
         // If this is the last segment, lets set group
-        if (startIndex >= endIndexIncl) {
-            return childNode;
-        } else {
-            return childNode.addChildren(rawPathSegments, startIndex + 1, endIndexIncl, belongsTo);
-        }
+        return startIndex >= endIndexIncl ? childNode : childNode.addChildren(rawPathSegments, startIndex + 1, endIndexIncl, belongsTo);
     }
 
-    private SortedSet<Suggestion> addChildToMatchesAndSearchInNextLevel(Module module,
-                                                                        FileType fileType, List<SuggestionNode> matchesRootTillParentNode, int numOfAncestors,
-                                                                        String[] querySegmentPrefixes, int querySegmentPrefixStartIndex,
-                                                                        Collection<MetadataSuggestionNode> childNodes) {
+    private SortedSet<Suggestion> addChildToMatchesAndSearchInNextLevel(final Module module,
+                                                                        final FileType fileType, final List<SuggestionNode> matchesRootTillParentNode, final int numOfAncestors,
+                                                                        final String[] querySegmentPrefixes, final int querySegmentPrefixStartIndex,
+                                                                        final Collection<MetadataSuggestionNode> childNodes) {
         SortedSet<Suggestion> suggestions = null;
-        for (MetadataSuggestionNode child : childNodes) {
-            List<SuggestionNode> matchesRootTillChild =
+        for (final MetadataSuggestionNode child : childNodes) {
+            final List<SuggestionNode> matchesRootTillChild =
                     unmodifiableList(newListWithMembers(matchesRootTillParentNode, child));
-            Set<Suggestion> matchedSuggestions = child
+            final Set<Suggestion> matchedSuggestions = child
                     .findKeySuggestionsForQueryPrefix(module, fileType, matchesRootTillChild, numOfAncestors,
                             querySegmentPrefixes, querySegmentPrefixStartIndex, null);
             if (matchedSuggestions != null) {
@@ -547,9 +538,9 @@ public class MetadataNonPropertySuggestionNode extends MetadataSuggestionNode {
         return suggestions;
     }
 
-    private void updateGroupType(Module module, SpringConfigurationMetadataGroup group) {
+    private void updateGroupType(final Module module, final SpringConfigurationMetadataGroup group) {
         if (group != null && group.getClassName() != null) {
-            PsiType groupPsiType = safeGetValidType(module, group.getClassName());
+            final PsiType groupPsiType = safeGetValidType(module, group.getClassName());
             if (groupPsiType != null) {
                 group.setNodeType(PsiCustomUtil.getSuggestionNodeType(groupPsiType));
             } else {

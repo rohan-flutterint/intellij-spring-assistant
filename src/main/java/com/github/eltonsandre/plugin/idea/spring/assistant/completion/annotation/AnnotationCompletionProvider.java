@@ -6,7 +6,7 @@ import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.CompletionUtilCore;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiComment;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
@@ -24,9 +24,9 @@ import static com.github.eltonsandre.plugin.idea.spring.assistant.common.Constan
 
 public class AnnotationCompletionProvider extends CompletionProvider<CompletionParameters> {
 
-    private static final String REGEX_COMPLETION_SPRING_ANNOTATION_PREFIX = "(\\\"?(\\$\\{)?)(.*)(";
+    private static final String REGEX_COMPLETION_SPRING_ANNOTATION_PREFIX = "(\"?(\\$?\\{)?)(.*)(";
 
-    private static final String REGEX_COMPLETION_SPRING_ANNOTATION_SUFFIX = ")(\\\"?\\)?)(.*)";
+    private static final String REGEX_COMPLETION_SPRING_ANNOTATION_SUFFIX = ")(\"?\\)?)(.*)";
 
     private static final int INDEX_GROUP_KEY_IN_REGEX_SPRING_ANNOTATION = 3;
 
@@ -43,20 +43,22 @@ public class AnnotationCompletionProvider extends CompletionProvider<CompletionP
             return;
         }
 
-        final String textOrigin = this.getTextInKeyPositon(element.getText());
-        final String textContext = this.getTextInKeyPositon(element.getContext().getText());
-
         final var module = PsiCustomUtil.findModule(element);
-        final var project = element.getProject();
-
-        final var service = project.getService(SuggestionService.class);
-        if (module == null || !service.canProvideSuggestions(module)) {
+        if (module == null) {
             return;
         }
 
+        final var service = SuggestionService.getInstance(module);
+        if (service.cannotProvideSuggestions()) {
+            return;
+        }
+
+        final String textOrigin = this.getTextInKeyPositon(element.getText());
+        final String textContext = this.getTextInKeyPositon(element.getContext().getText());
+
         final String queryWithDotDelimitedPrefixes = this.getQueryWithDotDelimitedPrefixes(textOrigin);
         final List<String> ancestralKeys = GenericUtil.getAncestralKey(textContext);
-        final List<LookupElementBuilder> suggestions = service.findSuggestionsForQueryPrefix(module,
+        final List<LookupElement> suggestions = service.findSuggestionsForQueryPrefix(
                 FileType.JAVA, element, ancestralKeys, queryWithDotDelimitedPrefixes, null);
 
         resultSet = resultSet.withPrefixMatcher(queryWithDotDelimitedPrefixes);
@@ -68,6 +70,7 @@ public class AnnotationCompletionProvider extends CompletionProvider<CompletionP
 
     private String getTextInKeyPositon(final String text) {
         final var matcher = PATTERN_COMPLETION_SPRING_ANNOTATION.matcher(text);
+
         if (matcher.matches()) {
             return matcher.group(INDEX_GROUP_KEY_IN_REGEX_SPRING_ANNOTATION);
         }

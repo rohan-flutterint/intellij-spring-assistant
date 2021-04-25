@@ -1,12 +1,12 @@
 package in.oneton.idea.spring.assistant.plugin.suggestion.completion;
 
+import com.github.eltonsandre.plugin.idea.spring.assistant.common.Constants;
 import com.intellij.lang.HelpID;
 import com.intellij.lang.cacheBuilder.WordsScanner;
 import com.intellij.lang.findUsages.FindUsagesProvider;
 import com.intellij.lang.properties.PropertiesBundle;
 import com.intellij.lang.properties.parsing.PropertiesWordsScanner;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import in.oneton.idea.spring.assistant.plugin.misc.GenericUtil;
@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -70,32 +71,26 @@ public class CustomPropertiesFindUsagesProvider implements FindUsagesProvider {
     }
 
     private ReferenceProxyElement findElement(final PsiElement myElement) {
-
-        final Project project = myElement.getProject();
-
-        final PsiFile file = myElement.getContainingFile();
-
-        final var service = project.getService(SuggestionService.class);
-
-        final String value = myElement.getText();
-
         final Module module = PsiCustomUtil.findModule(myElement);
-
-        final List<SuggestionNode> matchedNodesFromRootTillLeaf =
-                service.findMatchedNodesRootTillEnd(module, GenericUtil.getAncestralKey(value));
-
-        if (matchedNodesFromRootTillLeaf != null) {
-
-            final SuggestionNode target = matchedNodesFromRootTillLeaf.get(matchedNodesFromRootTillLeaf.size() - 1);
-
-            final String targetNavigationPathDotDelimited =
-                    matchedNodesFromRootTillLeaf.stream().map(v -> v.getNameForDocumentation(module))
-                            .collect(Collectors.joining("."));
-
-            return new ReferenceProxyElement(file.getManager(), file.getLanguage(),
-                    targetNavigationPathDotDelimited, target, value);
+        if (Objects.isNull(module)) {
+            return null;
         }
 
-        return null;
+        final var service = SuggestionService.getInstance(module);
+        final String value = myElement.getText();
+
+        final List<SuggestionNode> matchedNodesFromRootTillLeaf = service.findMatchedNodesRootTillEnd(GenericUtil.getAncestralKey(value));
+        if (Objects.isNull(matchedNodesFromRootTillLeaf)) {
+            return null;
+        }
+
+        final String targetNavigationPathDotDelimited = matchedNodesFromRootTillLeaf.stream()
+                .map(v -> v.getNameForDocumentation(module))
+                .collect(Collectors.joining(Constants.PROP_DOT));
+
+        final PsiFile file = myElement.getContainingFile();
+        final SuggestionNode target = matchedNodesFromRootTillLeaf.get(matchedNodesFromRootTillLeaf.size() - 1);
+        return new ReferenceProxyElement(file.getManager(), file.getLanguage(), targetNavigationPathDotDelimited, target, value);
     }
+
 }

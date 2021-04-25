@@ -1,5 +1,6 @@
 package in.oneton.idea.spring.assistant.plugin.suggestion.component;
 
+import com.github.eltonsandre.plugin.idea.spring.assistant.suggestion.service.SuggestionIndexerProjectService;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.Key;
@@ -12,12 +13,12 @@ import com.intellij.openapi.externalSystem.util.Order;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
-import in.oneton.idea.spring.assistant.plugin.suggestion.service.SuggestionService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 
+import static com.github.eltonsandre.plugin.idea.spring.assistant.common.LogUtil.debug;
 import static com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil.getExternalRootProjectPath;
 import static in.oneton.idea.spring.assistant.plugin.misc.GenericUtil.moduleNamesAsStrCommaDelimited;
 import static java.util.Arrays.stream;
@@ -26,8 +27,7 @@ import static java.util.Arrays.stream;
  * Callback that gets invoked by gradle as soon as the project is imported successfully
  */
 @Order(5000)
-public class GradleReindexingProjectDataService
-        extends AbstractProjectDataService<ModuleData, Void> {
+public class GradleReindexingProjectDataService extends AbstractProjectDataService<ModuleData, Void> {
 
     private static final Logger log = Logger.getInstance(GradleReindexingProjectDataService.class);
 
@@ -42,12 +42,11 @@ public class GradleReindexingProjectDataService
                                 @Nullable final ProjectData projectData, @NotNull final Project project,
                                 @NotNull final IdeModelsProvider modelsProvider) {
         if (projectData != null) {
-            this.debug(() -> log.debug(
-                    "Gradle dependencies are updated for project, will trigger indexing via dumbservice for project "
-                            + project.getName()));
+            debug(() -> log.debug("Gradle dependencies are updated for project, will trigger indexing via dumbservice for project " + project.getName()));
+
             DumbService.getInstance(project).smartInvokeLater(() -> {
                 log.debug("Will attempt to trigger indexing for project " + project.getName());
-                final var service = project.getService(SuggestionService.class);
+                final var service = SuggestionIndexerProjectService.getInstance(project);
 
                 try {
                     final Module[] validModules = stream(modelsProvider.getModules()).filter(module -> {
@@ -57,9 +56,9 @@ public class GradleReindexingProjectDataService
                     }).toArray(Module[]::new);
 
                     if (validModules.length > 0) {
-                        service.reindex(project, validModules);
+                        service.index(validModules);
                     } else {
-                        this.debug(() -> log.debug(
+                        debug(() -> log.debug(
                                 "None of the modules " + moduleNamesAsStrCommaDelimited(modelsProvider.getModules(),
                                         true) + " are relevant for indexing, skipping for project " + project
                                         .getName()));
@@ -69,18 +68,6 @@ public class GradleReindexingProjectDataService
                             + moduleNamesAsStrCommaDelimited(modelsProvider.getModules(), false), e);
                 }
             });
-        }
-    }
-
-    /**
-     * Debug logging can be enabled by adding fully classified class name/package name with # prefix
-     * For eg., to enable debug logging, go `Help > Debug log settings` & type `#in.oneton.idea.spring.assistant.plugin.suggestion.service.SuggestionServiceImpl`
-     *
-     * @param doWhenDebug code to execute when debug is enabled
-     */
-    private void debug(final Runnable doWhenDebug) {
-        if (log.isDebugEnabled()) {
-            doWhenDebug.run();
         }
     }
 

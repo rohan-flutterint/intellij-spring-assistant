@@ -1,5 +1,6 @@
 package in.oneton.idea.spring.assistant.plugin.suggestion;
 
+import com.github.eltonsandre.plugin.idea.spring.assistant.common.Constants;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
@@ -32,62 +33,65 @@ import static java.util.stream.Collectors.toList;
 import static org.jetbrains.yaml.YAMLHighlighter.SCALAR_TEXT;
 
 @Getter
-@EqualsAndHashCode(of = "suggestionToDisplay")
 @ToString
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Suggestion implements Comparable<Suggestion> {
+
     public static final String PERIOD_DELIMITER = "\\.";
 
-    private static final LookupElementRenderer<LookupElement> CUSTOM_SUGGESTION_RENDERER =
-            new LookupElementRenderer<>() {
-                public void renderElement(LookupElement element, LookupElementPresentation presentation) {
-                    Suggestion suggestion = (Suggestion) element.getObject();
-                    if (suggestion.icon != null) {
-                        presentation.setIcon(suggestion.icon);
-                    }
+    private static final LookupElementRenderer<LookupElement> CUSTOM_SUGGESTION_RENDERER = new LookupElementRenderer<>() {
+        @Override
+        public void renderElement(final LookupElement element, final LookupElementPresentation presentation) {
+            final Suggestion suggestion = (Suggestion) element.getObject();
+            if (suggestion.icon != null) {
+                presentation.setIcon(suggestion.icon);
+            }
 
-                    presentation.setStrikeout(suggestion.deprecationLevel != null);
-                    if (suggestion.deprecationLevel != null) {
-                        if (suggestion.deprecationLevel == SpringConfigurationMetadataDeprecationLevel.error) {
-                            presentation.setItemTextForeground(RED);
-                        } else {
-                            presentation.setItemTextForeground(YELLOW);
-                        }
-                    }
-
-                    String lookupString = element.getLookupString();
-                    presentation.setItemText(lookupString);
-                    if (!lookupString.equals(suggestion.suggestionToDisplay)) {
-                        presentation.setItemTextBold(true);
-                    }
-
-                    String shortDescription;
-                    if (suggestion.defaultValue != null) {
-                        shortDescription = shortenTextWithEllipsis(suggestion.defaultValue, 60, 0, true);
-                        TextAttributes attrs =
-                                EditorColorsManager.getInstance().getGlobalScheme().getAttributes(SCALAR_TEXT);
-                        presentation.setTailText("=" + shortDescription, attrs.getForegroundColor());
-                    }
-
-                    if (suggestion.description != null) {
-                        presentation
-                                .appendTailText(" (" + getFirstSentenceWithoutDot(suggestion.description) + ")",
-                                        true);
-                    }
-
-                    if (suggestion.shortType != null) {
-                        presentation.setTypeText(suggestion.shortType);
-                    }
+            presentation.setStrikeout(suggestion.deprecationLevel != null);
+            if (suggestion.deprecationLevel != null) {
+                if (suggestion.deprecationLevel == SpringConfigurationMetadataDeprecationLevel.error) {
+                    presentation.setItemTextForeground(RED);
+                } else {
+                    presentation.setItemTextForeground(YELLOW);
                 }
-            };
+            }
+
+            final String lookupString = element.getLookupString();
+            presentation.setItemText(lookupString);
+            if (!lookupString.equals(suggestion.suggestionToDisplay)) {
+                presentation.setItemTextBold(true);
+            }
+
+            final String shortDescription;
+            if (suggestion.defaultValue != null) {
+                shortDescription = shortenTextWithEllipsis(suggestion.defaultValue, 60, 0, true);
+                final TextAttributes attrs = EditorColorsManager.getInstance().getGlobalScheme().getAttributes(SCALAR_TEXT);
+                presentation.setTailText(Constants.EQUALS_SIGN + shortDescription, attrs.getForegroundColor());
+            }
+
+            if (suggestion.description != null) {
+                presentation.appendTailText(" (" + getFirstSentenceWithoutDot(suggestion.description) + ")", true);
+            }
+
+            if (suggestion.shortType != null) {
+                presentation.setTypeText(suggestion.shortType);
+            }
+        }
+    };
 
     @NotNull
+    @EqualsAndHashCode.Include
     private final String suggestionToDisplay;
+
     @Nullable
     private final String description;
+
     @Nullable
     private final String shortType;
+
     @Nullable
     private final String defaultValue;
+
     @Nullable
     private final SpringConfigurationMetadataDeprecationLevel deprecationLevel;
     /**
@@ -124,11 +128,11 @@ public class Suggestion implements Comparable<Suggestion> {
     private final String pathDotDelimitedRootToLeaf;
 
     @Builder
-    public Suggestion(@NotNull String suggestionToDisplay, @Nullable String description,
-                      @Nullable String shortType, @Nullable String defaultValue,
-                      @Nullable SpringConfigurationMetadataDeprecationLevel deprecationLevel,
-                      @NotNull List<? extends SuggestionNode> matchesTopFirst, int numOfAncestors, boolean forValue,
-                      boolean representingDefaultValue, @NotNull FileType fileType, @Nullable Icon icon) {
+    public Suggestion(@NotNull final String suggestionToDisplay, @Nullable final String description,
+                      @Nullable final String shortType, @Nullable final String defaultValue,
+                      @Nullable final SpringConfigurationMetadataDeprecationLevel deprecationLevel,
+                      @NotNull final List<? extends SuggestionNode> matchesTopFirst, final int numOfAncestors, final boolean forValue,
+                      final boolean representingDefaultValue, @NotNull final FileType fileType, @Nullable final Icon icon) {
         this.suggestionToDisplay = suggestionToDisplay;
         this.description = description;
         this.shortType = shortType;
@@ -145,50 +149,50 @@ public class Suggestion implements Comparable<Suggestion> {
     }
 
     public LookupElementBuilder newLookupElement() {
-        LookupElementBuilder builder = LookupElementBuilder.create(this, suggestionToDisplay);
-        if (forValue) {
-            if (description != null) {
-                builder = builder.withTypeText(description, true);
+        LookupElementBuilder builder = LookupElementBuilder.create(this, this.suggestionToDisplay);
+        if (this.forValue) {
+            if (this.description != null) {
+                builder = builder.withTypeText(this.description, true);
             }
-            if (representingDefaultValue) {
+            if (this.representingDefaultValue) {
                 builder = builder.bold();
             }
-            builder = builder.withInsertHandler(fileType.newValueInsertHandler());
+            builder = builder.withInsertHandler(this.fileType.newValueInsertHandler());
         } else {
             builder = builder.withRenderer(CUSTOM_SUGGESTION_RENDERER)
-                    .withInsertHandler(fileType.newKeyInsertHandler());
+                    .withInsertHandler(this.fileType.newKeyInsertHandler());
         }
         return builder;
     }
 
     public String getFullPath() {
-        return dotDelimitedOriginalNames(matchesTopFirst);
+        return dotDelimitedOriginalNames(this.matchesTopFirst);
     }
 
-    public SuggestionNodeType getSuggestionNodeType(Module module) {
-        return getLastSuggestionNode().getSuggestionNodeType(module);
+    public SuggestionNodeType getSuggestionNodeType(final Module module) {
+        return this.getLastSuggestionNode().getSuggestionNodeType(module);
     }
 
     public SuggestionNode getLastSuggestionNode() {
-        return matchesTopFirst.get(matchesTopFirst.size() - 1);
+        return this.matchesTopFirst.get(this.matchesTopFirst.size() - 1);
     }
 
     @Override
-    public int compareTo(@NotNull Suggestion other) {
-        int pathRootToLeafComparisonValue =
-                pathDotDelimitedRootToLeaf.compareTo(other.pathDotDelimitedRootToLeaf);
+    public int compareTo(@NotNull final Suggestion other) {
+        final int pathRootToLeafComparisonValue =
+                this.pathDotDelimitedRootToLeaf.compareTo(other.pathDotDelimitedRootToLeaf);
         if (pathRootToLeafComparisonValue == 0) {
-            return suggestionToDisplay.compareTo(other.suggestionToDisplay);
+            return this.suggestionToDisplay.compareTo(other.suggestionToDisplay);
         }
         return pathRootToLeafComparisonValue;
     }
 
     @NotNull
     public List<? extends OriginalNameProvider> getMatchesForReplacement() {
-        if (matchesTopFirst.size() > numOfAncestors) {
-            return matchesTopFirst.stream().skip(numOfAncestors).collect(toList());
+        if (this.matchesTopFirst.size() > this.numOfAncestors) {
+            return this.matchesTopFirst.stream().skip(this.numOfAncestors).collect(toList());
         } else { // can happen when user is trying to select as a child of array, in this case, the suggestion itself becomes the original name
-            return singletonList(() -> suggestionToDisplay);
+            return singletonList(() -> this.suggestionToDisplay);
         }
     }
 

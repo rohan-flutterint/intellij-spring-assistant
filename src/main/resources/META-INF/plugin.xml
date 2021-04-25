@@ -34,35 +34,38 @@
     <depends config-file="gradle.xml" optional="true">com.intellij.gradle</depends>
     <!--    <depends config-file="gradle.xml" optional="true">org.jetbrains.plugins.gradle</depends>-->
 
-    <projectListeners>
-        <listener class="in.oneton.idea.spring.assistant.plugin.suggestion.component.Bootstrap"
-                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
-    </projectListeners>
-
     <extensionPoints>
         <extensionPoint qualifiedName="spring.assistant.initializr.moduleBuilderPostProcessor"
                         interface="in.oneton.idea.spring.assistant.plugin.initializr.ModuleBuilderPostProcessor"/>
     </extensionPoints>
 
-    <extensions defaultExtensionNs="com.intellij">
-        <projectService id="spring-assistant-project-service-suggestion"
-                        serviceInterface="in.oneton.idea.spring.assistant.plugin.suggestion.service.SuggestionService"
-                        serviceImplementation="in.oneton.idea.spring.assistant.plugin.suggestion.service.SuggestionServiceImpl"/>
+    <projectListeners>
+        <listener class="in.oneton.idea.spring.assistant.plugin.suggestion.component.Bootstrap"
+                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
+    </projectListeners>
 
-        <moduleBuilder id="spring-assistant-module-initializr"
-                       builderClass="in.oneton.idea.spring.assistant.plugin.initializr.InitializrModuleBuilder"
-                       order="last"/>
+    <extensions defaultExtensionNs="com.intellij">
+        <moduleBuilder id="spring-assistant-module-initializr" order="last"
+                       builderClass="in.oneton.idea.spring.assistant.plugin.initializr.InitializrModuleBuilder"/>
+
+        <projectService id="spring-assistant-project-service-suggestion"
+                        serviceInterface="com.github.eltonsandre.plugin.idea.spring.assistant.suggestion.service.SuggestionIndexerProjectService"
+                        serviceImplementation="com.github.eltonsandre.plugin.idea.spring.assistant.suggestion.service.SuggestionIndexerProjectServiceImpl"/>
+
+        <moduleService id="spring-assistant-module-service-suggestion"
+                       serviceInterface="in.oneton.idea.spring.assistant.plugin.suggestion.service.SuggestionService"
+                       serviceImplementation="in.oneton.idea.spring.assistant.plugin.suggestion.service.SuggestionServiceImpl"/>
 
         <gotoDeclarationHandler implementation="com.github.eltonsandre.plugin.idea.spring.assistant.gotodeclaration.LinkPropertiesKey"/>
 
         <completion.contributor language="yaml"
                                 implementationClass="in.oneton.idea.spring.assistant.plugin.suggestion.completion.YamlCompletionContributor"/>
 
-        <completion.contributor language="JAVA"
-                                implementationClass="com.github.eltonsandre.plugin.idea.spring.assistant.completion.annotation.AnnotationCompletionContributor"/>
-
         <completion.contributor language="Properties"
                                 implementationClass="in.oneton.idea.spring.assistant.plugin.suggestion.completion.PropertiesCompletionContributor"/>
+
+        <completion.contributor language="JAVA"
+                                implementationClass="com.github.eltonsandre.plugin.idea.spring.assistant.completion.annotation.AnnotationCompletionContributor"/>
 
         <lang.documentationProvider language="yaml"
                                     implementationClass="in.oneton.idea.spring.assistant.plugin.suggestion.completion.YamlDocumentationProvider"/>
@@ -98,6 +101,7 @@
         <!-- <annotator language="yaml" implementationClass="DuplicateKeyAnnotator"/>-->
         <!-- <annotator language="yaml" implementationClass="DataTypeCheckerAnnotator"/>-->
         <!-- <annotator language="yaml" implementationClass="PropertyNotInModelAnnotator"/>-->
+
     </extensions>
 
 </idea-plugin>

@@ -1,5 +1,6 @@
 package in.oneton.idea.spring.assistant.plugin.suggestion.completion;
 
+import com.github.eltonsandre.plugin.idea.spring.assistant.common.Constants;
 import com.intellij.lang.Language;
 import com.intellij.lang.documentation.AbstractDocumentationProvider;
 import com.intellij.openapi.editor.Editor;
@@ -71,10 +72,8 @@ public class YamlDocumentationProvider extends AbstractDocumentationProvider {
             final List<SuggestionNode> matchedNodesFromRootTillLeaf;
             boolean requestedForTargetValue = false;
 
-            final var project = element.getProject();
-            final var suggestionService = project.getService(SuggestionService.class);
-
             final Module module = findModule(element);
+            final var suggestionService = SuggestionService.getInstance(module);
 
             List<String> ancestralKeys = null;
             final PsiElement elementContext = element.getContext();
@@ -92,21 +91,19 @@ public class YamlDocumentationProvider extends AbstractDocumentationProvider {
             String value = null;
             if (elementContext instanceof YAMLKeyValue) {
                 value = truncateIdeaDummyIdentifier(((YAMLKeyValue) elementContext).getKeyText());
-                requestedForTargetValue = false;
             } else if (elementContext instanceof YAMLPlainTextImpl) {
                 value = truncateIdeaDummyIdentifier(element.getText());
                 requestedForTargetValue = true;
             }
 
             if (ancestralKeys != null) {
-                matchedNodesFromRootTillLeaf =
-                        suggestionService.findMatchedNodesRootTillEnd(module, ancestralKeys);
+                matchedNodesFromRootTillLeaf = suggestionService.findMatchedNodesRootTillEnd(ancestralKeys);
                 if (matchedNodesFromRootTillLeaf != null) {
-                    final SuggestionNode target =
-                            matchedNodesFromRootTillLeaf.get(matchedNodesFromRootTillLeaf.size() - 1);
-                    final String targetNavigationPathDotDelimited =
-                            matchedNodesFromRootTillLeaf.stream().map(v -> v.getNameForDocumentation(module))
-                                    .collect(joining("."));
+                    final SuggestionNode target = matchedNodesFromRootTillLeaf.get(matchedNodesFromRootTillLeaf.size() - 1);
+                    final String targetNavigationPathDotDelimited = matchedNodesFromRootTillLeaf.stream()
+                            .map(v -> v.getNameForDocumentation(module))
+                            .collect(joining(Constants.PROP_DOT));
+
                     return new DocumentationProxyElement(file.getManager(), file.getLanguage(),
                             targetNavigationPathDotDelimited, target, requestedForTargetValue, value);
                 }

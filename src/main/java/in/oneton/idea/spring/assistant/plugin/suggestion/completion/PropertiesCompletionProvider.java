@@ -4,7 +4,7 @@ import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.CompletionUtilCore;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.PsiComment;
 import com.intellij.psi.PsiElement;
@@ -24,7 +24,8 @@ class PropertiesCompletionProvider extends CompletionProvider<CompletionParamete
 
     @Override
     protected void addCompletions(@NotNull final CompletionParameters completionParameters,
-                                  final @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+                                  final @NotNull ProcessingContext processingContext,
+                                  @NotNull CompletionResultSet resultSet) {
 
         final PsiElement element = completionParameters.getPosition();
         if (element instanceof PsiComment) {
@@ -37,42 +38,38 @@ class PropertiesCompletionProvider extends CompletionProvider<CompletionParamete
         }
 
         final Module module = PsiCustomUtil.findModule(element);
-        final var project = element.getProject();
-        final SuggestionService service = project.getService(SuggestionService.class);
-        if (module == null || !service.canProvideSuggestions(module)) {
+        if (Objects.isNull(module)) {
+            return;
+        }
+
+        final SuggestionService service = SuggestionService.getInstance(module);
+        if (service.cannotProvideSuggestions()) {
             return;
         }
 
         final PsiElement elementContext = element.getContext();
+        final String textContext = GenericUtil.truncateIdeaDummyIdentifier(Objects.requireNonNull(elementContext).getText());
 
-        final String text = GenericUtil.truncateIdeaDummyIdentifier(Objects.requireNonNull(elementContext).getText());
+        final List<String> ancestralKeys = GenericUtil.getAncestralKey(textContext);
 
-        final List<LookupElementBuilder> suggestions;
-        // For top level element, since there is no parent keyValue would be null
         final String origin = GenericUtil.truncateIdeaDummyIdentifier(element);
+        final String queryWithDotDelimitedPrefixes = this.getQueryWithDotDelimitedPrefixes(origin);
 
-        final int pos = origin.lastIndexOf(PROP_DOT);
-
-        String queryWithDotDelimitedPrefixes = origin;
-
-        if (pos != -1) {
-            if (pos == origin.length() - 1) {
-                queryWithDotDelimitedPrefixes = StringUtils.EMPTY;
-            } else {
-                queryWithDotDelimitedPrefixes = origin.substring(pos + 1);
-            }
-        }
-
-        final List<String> ancestralKeys = GenericUtil.getAncestralKey(text);
-
-        suggestions = service.findSuggestionsForQueryPrefix(module, FileType.PROPERTIES, element,
+        final List<LookupElement> suggestions = service.findSuggestionsForQueryPrefix(FileType.PROPERTIES, element,
                 ancestralKeys, queryWithDotDelimitedPrefixes, null);
 
         resultSet = resultSet.withPrefixMatcher(queryWithDotDelimitedPrefixes);
-
         if (suggestions != null) {
             suggestions.forEach(resultSet::addElement);
         }
+    }
+
+    private String getQueryWithDotDelimitedPrefixes(final String origin) {
+        final int pos = origin.lastIndexOf(PROP_DOT);
+        if (pos != -1) {
+            return (pos == origin.length() - 1) ? StringUtils.EMPTY : origin.substring(pos + 1);
+        }
+        return origin;
     }
 
 }
