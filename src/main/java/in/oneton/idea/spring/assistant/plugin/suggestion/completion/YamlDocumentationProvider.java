@@ -2,10 +2,8 @@ package in.oneton.idea.spring.assistant.plugin.suggestion.completion;
 
 import com.intellij.lang.Language;
 import com.intellij.lang.documentation.AbstractDocumentationProvider;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
@@ -30,14 +28,14 @@ import static java.util.stream.Collectors.joining;
 
 public class YamlDocumentationProvider extends AbstractDocumentationProvider {
     @Override
-    public String generateDoc(PsiElement element, @Nullable PsiElement originalElement) {
+    public String generateDoc(final PsiElement element, @Nullable final PsiElement originalElement) {
         if (element instanceof DocumentationProxyElement) {
-            DocumentationProxyElement proxyElement = (DocumentationProxyElement) element;
-            DocumentationProvider target = proxyElement.target;
+            final DocumentationProxyElement proxyElement = (DocumentationProxyElement) element;
+            final DocumentationProvider target = proxyElement.target;
 
             // Intermediate nodes will not have documentation
             if (target != null && target.supportsDocumentation()) {
-                Module module = findModule(element);
+                final Module module = findModule(element);
                 if (proxyElement.requestedForTargetValue) {
                     return target
                             .getDocumentationForValue(module, proxyElement.nodeNavigationPathDotDelimited,
@@ -54,10 +52,10 @@ public class YamlDocumentationProvider extends AbstractDocumentationProvider {
      * This will called if the user tries to lookup documentation for the choices being shown (ctrl+q within suggestion dialog)
      */
     @Override
-    public PsiElement getDocumentationElementForLookupItem(PsiManager psiManager, Object object,
-                                                           @Nullable PsiElement element) {
+    public PsiElement getDocumentationElementForLookupItem(final PsiManager psiManager, final Object object,
+                                                           @Nullable final PsiElement element) {
         if (object instanceof Suggestion) {
-            Suggestion suggestion = (Suggestion) object;
+            final Suggestion suggestion = (Suggestion) object;
             return new DocumentationProxyElement(psiManager, INSTANCE, suggestion.getFullPath(),
                     suggestion.getMatchesTopFirst().get(suggestion.getMatchesTopFirst().size() - 1),
                     suggestion.isForValue(), suggestion.getSuggestionToDisplay());
@@ -67,20 +65,19 @@ public class YamlDocumentationProvider extends AbstractDocumentationProvider {
 
     @Nullable
     @Override
-    public PsiElement getCustomDocumentationElement(@NotNull Editor editor, @NotNull PsiFile file,
-                                                    @Nullable PsiElement element, int targetOffset) {
+    public PsiElement getCustomDocumentationElement(@NotNull final Editor editor, @NotNull final PsiFile file,
+                                                    @Nullable final PsiElement element, final int targetOffset) {
         if (element != null) {
-            List<SuggestionNode> matchedNodesFromRootTillLeaf;
+            final List<SuggestionNode> matchedNodesFromRootTillLeaf;
             boolean requestedForTargetValue = false;
 
-            SuggestionService suggestionService =
-                    ServiceManager.getService(element.getProject(), SuggestionService.class);
+            final var project = element.getProject();
+            final var suggestionService = project.getService(SuggestionService.class);
 
-            Project project = element.getProject();
-            Module module = findModule(element);
+            final Module module = findModule(element);
 
             List<String> ancestralKeys = null;
-            PsiElement elementContext = element.getContext();
+            final PsiElement elementContext = element.getContext();
             PsiElement context = elementContext;
             do {
                 if (context instanceof YAMLKeyValue) {
@@ -105,9 +102,9 @@ public class YamlDocumentationProvider extends AbstractDocumentationProvider {
                 matchedNodesFromRootTillLeaf =
                         suggestionService.findMatchedNodesRootTillEnd(module, ancestralKeys);
                 if (matchedNodesFromRootTillLeaf != null) {
-                    SuggestionNode target =
+                    final SuggestionNode target =
                             matchedNodesFromRootTillLeaf.get(matchedNodesFromRootTillLeaf.size() - 1);
-                    String targetNavigationPathDotDelimited =
+                    final String targetNavigationPathDotDelimited =
                             matchedNodesFromRootTillLeaf.stream().map(v -> v.getNameForDocumentation(module))
                                     .collect(joining("."));
                     return new DocumentationProxyElement(file.getManager(), file.getLanguage(),
@@ -127,8 +124,8 @@ public class YamlDocumentationProvider extends AbstractDocumentationProvider {
         private final String nodeNavigationPathDotDelimited;
 
         DocumentationProxyElement(@NotNull final PsiManager manager, @NotNull final Language language,
-                                  String nodeNavigationPathDotDelimited, @NotNull final DocumentationProvider target,
-                                  boolean requestedForTargetValue, @Nullable String value) {
+                                  final String nodeNavigationPathDotDelimited, @NotNull final DocumentationProvider target,
+                                  final boolean requestedForTargetValue, @Nullable final String value) {
             super(manager, language);
             this.nodeNavigationPathDotDelimited = nodeNavigationPathDotDelimited;
             this.target = target;
@@ -138,7 +135,7 @@ public class YamlDocumentationProvider extends AbstractDocumentationProvider {
 
         @Override
         public String getText() {
-            return nodeNavigationPathDotDelimited;
+            return this.nodeNavigationPathDotDelimited;
         }
     }
 

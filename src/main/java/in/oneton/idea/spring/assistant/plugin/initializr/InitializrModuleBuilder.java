@@ -80,7 +80,7 @@ public class InitializrModuleBuilder extends ModuleBuilder {
     @Override
     @Nullable
     public ModuleWizardStep modifySettingsStep(@NotNull final SettingsStep settingsStep) {
-        ModuleNameLocationSettings moduleNameLocationSettings = settingsStep.getModuleNameLocationSettings();
+        final ModuleNameLocationSettings moduleNameLocationSettings = settingsStep.getModuleNameLocationSettings();
         if (moduleNameLocationSettings != null) {
             moduleNameLocationSettings.setModuleName(this.request.getArtifactId());
         }
@@ -145,7 +145,7 @@ public class InitializrModuleBuilder extends ModuleBuilder {
 
     @Override
     public String getPresentableName() {
-        return "Spring Assistant";
+        return "Spring Initializr";
     }
 
     @Override

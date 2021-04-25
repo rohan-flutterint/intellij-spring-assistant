@@ -5,7 +5,6 @@ import com.intellij.lang.cacheBuilder.WordsScanner;
 import com.intellij.lang.findUsages.FindUsagesProvider;
 import com.intellij.lang.properties.PropertiesBundle;
 import com.intellij.lang.properties.parsing.PropertiesWordsScanner;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
@@ -33,27 +32,27 @@ public class CustomPropertiesFindUsagesProvider implements FindUsagesProvider {
     }
 
     @Override
-    public boolean canFindUsagesFor(@NotNull PsiElement psiElement) {
-        return findElement(psiElement) != null;
+    public boolean canFindUsagesFor(@NotNull final PsiElement psiElement) {
+        return this.findElement(psiElement) != null;
     }
 
     @Nullable
     @Override
-    public String getHelpId(@NotNull PsiElement psiElement) {
+    public String getHelpId(@NotNull final PsiElement psiElement) {
         return HelpID.FIND_OTHER_USAGES;
     }
 
     @NotNull
     @Override
-    public String getType(@NotNull PsiElement element) {
+    public String getType(@NotNull final PsiElement element) {
         return PropertiesBundle.message("terms.property");
     }
 
     @NotNull
     @Override
-    public String getDescriptiveName(@NotNull PsiElement element) {
+    public String getDescriptiveName(@NotNull final PsiElement element) {
 
-        ReferenceProxyElement proxyElement = findElement(element);
+        final ReferenceProxyElement proxyElement = this.findElement(element);
 
         if (proxyElement == null) {
             return "Not Found";
@@ -66,30 +65,30 @@ public class CustomPropertiesFindUsagesProvider implements FindUsagesProvider {
 
     @NotNull
     @Override
-    public String getNodeText(@NotNull PsiElement element, boolean useFullName) {
-        return getDescriptiveName(element);
+    public String getNodeText(@NotNull final PsiElement element, final boolean useFullName) {
+        return this.getDescriptiveName(element);
     }
 
-    private ReferenceProxyElement findElement(PsiElement myElement) {
+    private ReferenceProxyElement findElement(final PsiElement myElement) {
 
-        Project project = myElement.getProject();
+        final Project project = myElement.getProject();
 
-        PsiFile file = myElement.getContainingFile();
+        final PsiFile file = myElement.getContainingFile();
 
-        SuggestionService service = ServiceManager.getService(project, SuggestionService.class);
+        final var service = project.getService(SuggestionService.class);
 
-        String value = myElement.getText();
+        final String value = myElement.getText();
 
-        Module module = PsiCustomUtil.findModule(myElement);
+        final Module module = PsiCustomUtil.findModule(myElement);
 
-        List<SuggestionNode> matchedNodesFromRootTillLeaf =
+        final List<SuggestionNode> matchedNodesFromRootTillLeaf =
                 service.findMatchedNodesRootTillEnd(module, GenericUtil.getAncestralKey(value));
 
         if (matchedNodesFromRootTillLeaf != null) {
 
-            SuggestionNode target = matchedNodesFromRootTillLeaf.get(matchedNodesFromRootTillLeaf.size() - 1);
+            final SuggestionNode target = matchedNodesFromRootTillLeaf.get(matchedNodesFromRootTillLeaf.size() - 1);
 
-            String targetNavigationPathDotDelimited =
+            final String targetNavigationPathDotDelimited =
                     matchedNodesFromRootTillLeaf.stream().map(v -> v.getNameForDocumentation(module))
                             .collect(Collectors.joining("."));
 

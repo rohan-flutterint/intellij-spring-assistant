@@ -16,27 +16,27 @@ import static in.oneton.idea.spring.assistant.plugin.misc.GenericUtil.moduleName
 
 public class MavenReIndexingDependencyChangeSubscriber implements ProjectManagerListener {
 
-    private static final Logger log =
-            Logger.getInstance(MavenReIndexingDependencyChangeSubscriber.class);
+    private static final Logger log = Logger.getInstance(MavenReIndexingDependencyChangeSubscriber.class);
 
     private MessageBusConnection connection;
 
     @Override
     public void projectOpened(@NotNull Project project) {
         // This will trigger indexing
-        SuggestionService service = ServiceManager.getService(project, SuggestionService.class);
+        final SuggestionService service = project.getService(SuggestionService.class);
 
         try {
-            debug(() -> log
-                    .debug("Subscribing to maven dependency updates for project " + project.getName()));
+            debug(() -> log.debug("Subscribing to maven dependency updates for project " + project.getName()));
+
             connection = project.getMessageBus().connect();
             connection.subscribe(MavenImportListener.TOPIC, (importedProjects, newModules) -> {
-                boolean proceed = importedProjects.stream().anyMatch(
-                        proj -> project.getName().equals(proj.getName()) && proj.getDirectory()
-                                .equals(project.getBasePath()));
+                boolean proceed = importedProjects.stream()
+                        .filter(proj -> project.getName().equals(proj.getName()))
+                        .anyMatch(proj -> proj.getDirectory().equals(project.getBasePath()));
 
                 if (proceed) {
                     debug(() -> log.debug("Maven dependencies are updated for project " + project.getName()));
+
                     DumbService.getInstance(project).smartInvokeLater(() -> {
                         log.debug("Will attempt to trigger indexing for project " + project.getName());
                         try {
@@ -52,15 +52,14 @@ public class MavenReIndexingDependencyChangeSubscriber implements ProjectManager
                                     + moduleNamesAsStrCommaDelimited(newModules, false), e);
                         }
                     });
+
                 } else {
-                    log.debug(
-                            "Skipping indexing as none of the imported projects match our project " + project
-                                    .getName());
+                    log.debug("Skipping indexing as none of the imported projects match our project " + project.getName());
                 }
             });
+
         } catch (Throwable e) {
-            log.error("Failed to subscribe to maven dependency updates for project " + project.getName(),
-                    e);
+            log.error("Failed to subscribe to maven dependency updates for project " + project.getName(), e);
         }
     }
 
