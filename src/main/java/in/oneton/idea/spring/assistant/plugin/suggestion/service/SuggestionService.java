@@ -1,7 +1,6 @@
 package in.oneton.idea.spring.assistant.plugin.suggestion.service;
 
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
@@ -14,8 +13,9 @@ import java.util.List;
 import java.util.Set;
 
 public interface SuggestionService {
-    static SuggestionService getInstance(@NotNull Project project) {
-        return ServiceManager.getService(project, SuggestionService.class);
+
+    static SuggestionService getInstance(@NotNull final Project project) {
+        return project.getService(SuggestionService.class);
     }
 
     void init(Project project);

@@ -29,41 +29,41 @@ public class ArrayMetadataProxy implements MetadataProxy {
     @Nullable
     private final MetadataProxy delegate;
 
-    ArrayMetadataProxy(Module module, @NotNull PsiArrayType type) {
+    ArrayMetadataProxy(final Module module, @NotNull final PsiArrayType type) {
         this.type = type;
-        delegate = newMetadataProxy(module, type.getComponentType());
+        this.delegate = newMetadataProxy(module, type.getComponentType());
     }
 
     @Nullable
     @Override
-    public SuggestionDocumentationHelper findDirectChild(Module module, String pathSegment) {
-        return doWithDelegateAndReturn(delegate -> delegate.findDirectChild(module, pathSegment), null);
-    }
-
-    @Nullable
-    @Override
-    public Collection<? extends SuggestionDocumentationHelper> findDirectChildrenForQueryPrefix(
-            Module module, String querySegmentPrefix) {
-        return findDirectChildrenForQueryPrefix(module, querySegmentPrefix, null);
+    public SuggestionDocumentationHelper findDirectChild(final Module module, final String pathSegment) {
+        return this.doWithDelegateAndReturn(delegate -> delegate.findDirectChild(module, pathSegment), null);
     }
 
     @Nullable
     @Override
     public Collection<? extends SuggestionDocumentationHelper> findDirectChildrenForQueryPrefix(
-            Module module, String querySegmentPrefix, @Nullable Set<String> siblingsToExclude) {
+            final Module module, final String querySegmentPrefix) {
+        return this.findDirectChildrenForQueryPrefix(module, querySegmentPrefix, null);
+    }
+
+    @Nullable
+    @Override
+    public Collection<? extends SuggestionDocumentationHelper> findDirectChildrenForQueryPrefix(
+            final Module module, final String querySegmentPrefix, @Nullable final Set<String> siblingsToExclude) {
         // TODO: Should each element be wrapped inside Iterale Suggestion element?
-        return doWithDelegateAndReturn(delegate -> delegate
+        return this.doWithDelegateAndReturn(delegate -> delegate
                 .findDirectChildrenForQueryPrefix(module, querySegmentPrefix, siblingsToExclude), null);
     }
 
     @Nullable
     @Override
-    public List<SuggestionNode> findDeepestSuggestionNode(Module module,
-                                                          List<SuggestionNode> matchesRootTillParentNode, String[] pathSegments,
-                                                          int pathSegmentStartIndex) {
-        return doWithDelegateAndReturn(delegate -> {
-            String pathSegment = pathSegments[pathSegmentStartIndex];
-            SuggestionDocumentationHelper directChildKeyMatch =
+    public List<SuggestionNode> findDeepestSuggestionNode(final Module module,
+                                                          final List<SuggestionNode> matchesRootTillParentNode, final String[] pathSegments,
+                                                          final int pathSegmentStartIndex) {
+        return this.doWithDelegateAndReturn(delegate -> {
+            final String pathSegment = pathSegments[pathSegmentStartIndex];
+            final SuggestionDocumentationHelper directChildKeyMatch =
                     delegate.findDirectChild(module, pathSegment);
             if (directChildKeyMatch != null) {
                 // TODO: Need to identify a better mechanism than this dirty way. Probably use ClassSuggestionNode as return type for findDirectChildrenForQueryPrefix
@@ -71,7 +71,7 @@ public class ArrayMetadataProxy implements MetadataProxy {
                 assert directChildKeyMatch instanceof SuggestionNode;
                 matchesRootTillParentNode
                         .add(new IterableKeySuggestionNode((SuggestionNode) directChildKeyMatch));
-                boolean lastPathSegment = pathSegmentStartIndex == pathSegments.length - 1;
+                final boolean lastPathSegment = pathSegmentStartIndex == pathSegments.length - 1;
                 if (lastPathSegment) {
                     return matchesRootTillParentNode;
                 } else {
@@ -85,29 +85,29 @@ public class ArrayMetadataProxy implements MetadataProxy {
 
     @Nullable
     @Override
-    public SortedSet<Suggestion> findKeySuggestionsForQueryPrefix(Module module, FileType fileType,
-                                                                  List<SuggestionNode> matchesRootTillParentNode, int numOfAncestors,
-                                                                  String[] querySegmentPrefixes, int querySegmentPrefixStartIndex) {
-        return findKeySuggestionsForQueryPrefix(module, fileType, matchesRootTillParentNode,
+    public SortedSet<Suggestion> findKeySuggestionsForQueryPrefix(final Module module, final FileType fileType,
+                                                                  final List<SuggestionNode> matchesRootTillParentNode, final int numOfAncestors,
+                                                                  final String[] querySegmentPrefixes, final int querySegmentPrefixStartIndex) {
+        return this.findKeySuggestionsForQueryPrefix(module, fileType, matchesRootTillParentNode,
                 numOfAncestors, querySegmentPrefixes, querySegmentPrefixStartIndex, null);
     }
 
     @Nullable
     @Override
-    public SortedSet<Suggestion> findKeySuggestionsForQueryPrefix(Module module, FileType fileType,
-                                                                  List<SuggestionNode> matchesRootTillParentNode, int numOfAncestors,
-                                                                  String[] querySegmentPrefixes, int querySegmentPrefixStartIndex,
-                                                                  @Nullable Set<String> siblingsToExclude) {
-        return doWithDelegateAndReturn(delegate -> {
-            String querySegmentPrefix = querySegmentPrefixes[querySegmentPrefixStartIndex];
-            Collection<? extends SuggestionDocumentationHelper> matches =
+    public SortedSet<Suggestion> findKeySuggestionsForQueryPrefix(final Module module, final FileType fileType,
+                                                                  final List<SuggestionNode> matchesRootTillParentNode, final int numOfAncestors,
+                                                                  final String[] querySegmentPrefixes, final int querySegmentPrefixStartIndex,
+                                                                  @Nullable final Set<String> siblingsToExclude) {
+        return this.doWithDelegateAndReturn(delegate -> {
+            final String querySegmentPrefix = querySegmentPrefixes[querySegmentPrefixStartIndex];
+            final Collection<? extends SuggestionDocumentationHelper> matches =
                     delegate.findDirectChildrenForQueryPrefix(module, querySegmentPrefix, siblingsToExclude);
             if (!isEmpty(matches)) {
                 return matches.stream().map(helper -> {
                     // TODO: Need to identify a better mechanism than this dirty way. Probably use ClassSuggestionNode as return type for findDirectChildrenForQueryPrefix
                     // since we are in an iterable(multiple values), keys would be requested, only if the object we are referring is not a leaf => GenericClassWrapper
                     assert helper instanceof SuggestionNode;
-                    List<SuggestionNode> rootTillMe = newListWithMembers(matchesRootTillParentNode,
+                    final List<SuggestionNode> rootTillMe = newListWithMembers(matchesRootTillParentNode,
                             new IterableKeySuggestionNode((SuggestionNode) helper));
                     return helper.buildSuggestionForKey(module, fileType, rootTillMe, numOfAncestors);
                 }).collect(toCollection(TreeSet::new));
@@ -118,44 +118,44 @@ public class ArrayMetadataProxy implements MetadataProxy {
 
     @Nullable
     @Override
-    public SortedSet<Suggestion> findValueSuggestionsForPrefix(Module module, FileType fileType,
-                                                               List<SuggestionNode> matchesRootTillMe, String prefix) {
-        return findValueSuggestionsForPrefix(module, fileType, matchesRootTillMe, prefix, null);
+    public SortedSet<Suggestion> findValueSuggestionsForPrefix(final Module module, final FileType fileType,
+                                                               final List<SuggestionNode> matchesRootTillMe, final String prefix) {
+        return this.findValueSuggestionsForPrefix(module, fileType, matchesRootTillMe, prefix, null);
     }
 
     @Nullable
     @Override
-    public SortedSet<Suggestion> findValueSuggestionsForPrefix(Module module, FileType fileType,
-                                                               List<SuggestionNode> matchesRootTillMe, String prefix,
-                                                               @Nullable Set<String> siblingsToExclude) {
-        return doWithDelegateAndReturn(delegate -> delegate
+    public SortedSet<Suggestion> findValueSuggestionsForPrefix(final Module module, final FileType fileType,
+                                                               final List<SuggestionNode> matchesRootTillMe, final String prefix,
+                                                               @Nullable final Set<String> siblingsToExclude) {
+        return this.doWithDelegateAndReturn(delegate -> delegate
                 .findValueSuggestionsForPrefix(module, fileType, matchesRootTillMe, prefix,
                         siblingsToExclude), null);
     }
 
     @Nullable
     @Override
-    public String getDocumentationForValue(Module module, String nodeNavigationPathDotDelimited,
-                                           String originalValue) {
-        return doWithDelegateAndReturn(delegate -> delegate
+    public String getDocumentationForValue(final Module module, final String nodeNavigationPathDotDelimited,
+                                           final String originalValue) {
+        return this.doWithDelegateAndReturn(delegate -> delegate
                 .getDocumentationForValue(module, nodeNavigationPathDotDelimited, originalValue), null);
     }
 
     @Override
-    public boolean isLeaf(Module module) {
-        return doWithDelegateAndReturn(delegate -> delegate.isLeaf(module), true);
+    public boolean isLeaf(final Module module) {
+        return this.doWithDelegateAndReturn(delegate -> delegate.isLeaf(module), true);
     }
 
     @NotNull
     @Override
-    public SuggestionNodeType getSuggestionNodeType(Module module) {
+    public SuggestionNodeType getSuggestionNodeType(final Module module) {
         return SuggestionNodeType.ARRAY;
     }
 
     @Nullable
     @Override
-    public PsiType getPsiType(Module module) {
-        return type;
+    public PsiType getPsiType(final Module module) {
+        return this.type;
     }
 
     @Override
@@ -164,21 +164,21 @@ public class ArrayMetadataProxy implements MetadataProxy {
     }
 
     @Override
-    public boolean targetClassRepresentsIterable(Module module) {
+    public boolean targetClassRepresentsIterable(final Module module) {
         return false;
     }
 
     private <T> T doWithDelegateAndReturn(
-            MetadataProxyInvokerWithReturnValue<T> targetInvokerWithReturnValue, T defaultReturnValue) {
-        if (delegate != null) {
-            return targetInvokerWithReturnValue.invoke(delegate);
+            final MetadataProxyInvokerWithReturnValue<T> targetInvokerWithReturnValue, final T defaultReturnValue) {
+        if (this.delegate != null) {
+            return targetInvokerWithReturnValue.invoke(this.delegate);
         }
         return defaultReturnValue;
     }
 
-    private void doWithDelegate(MetadataProxyInvoker targetInvoker) {
-        if (delegate != null) {
-            targetInvoker.invoke(delegate);
+    private void doWithDelegate(final MetadataProxyInvoker targetInvoker) {
+        if (this.delegate != null) {
+            targetInvoker.invoke(this.delegate);
         }
     }
 

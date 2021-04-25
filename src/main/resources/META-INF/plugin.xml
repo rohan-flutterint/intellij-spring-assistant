@@ -1,13 +1,10 @@
-<idea-plugin url="https://github.com/eltonsandre/intellij-spring-assistant">
+<idea-plugin url="https://github.com/eltonsandre/intellij-spring-assistant" require-restart="false">
 
-    <id>in.1ton.idea.spring.assistant.plugin</id>
-    <name>Spring Assistant</name>
-    <!-- Will be auto populated by plugin -->
-    <vendor email="dev@1ton.in" url="https://github.com/eltonsandre">
-        eltonsandre and Development Team @ 1Ton Technologies
-    </vendor>
+    <id>dev.eltonsandre.intellij.spring.assistant.plugin</id>
+    <name>Spring Initializr and Assistant</name>
 
-    <!-- Will be auto populated by plugin -->
+    <vendor email="eltonsandre@gmail.com" url="https://github.com/eltonsandre">eltonsandre</vendor>
+
     <description>
         <![CDATA[
               <h3>Autocomplete wizard for configuration property with spring</h3>
@@ -19,19 +16,28 @@
     <change-notes>
         <![CDATA[
         Fix and refactor:
-            - fix bugs and refactor build.gradle upgrade dependence versions
-            - upgrade JDK 11
-            - test: IntelliJ IDEA 2020.3.3 (Community Edition) Build #IC-203.xx
-          ]]>]
+         - new feature - link properties
+         - test: IntelliJ IDEA 2021.3.2 (Community Edition) Build #IC-213.xx
+        ]]>]
     </change-notes>
 
     <depends>com.intellij.modules.java</depends>
     <depends>com.intellij.modules.lang</depends>
-    <depends>org.jetbrains.plugins.yaml</depends>
+    <depends>com.intellij.modules.platform</depends>
+
+    <depends>com.intellij.java</depends>
+
     <depends>com.intellij.properties</depends>
+    <depends>org.jetbrains.plugins.yaml</depends>
+
     <depends config-file="maven.xml" optional="true">org.jetbrains.idea.maven</depends>
     <depends config-file="gradle.xml" optional="true">com.intellij.gradle</depends>
     <!--    <depends config-file="gradle.xml" optional="true">org.jetbrains.plugins.gradle</depends>-->
+
+    <projectListeners>
+        <listener class="in.oneton.idea.spring.assistant.plugin.suggestion.component.Bootstrap"
+                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
+    </projectListeners>
 
     <extensionPoints>
         <extensionPoint qualifiedName="spring.assistant.initializr.moduleBuilderPostProcessor"
@@ -39,8 +45,13 @@
     </extensionPoints>
 
     <extensions defaultExtensionNs="com.intellij">
+        <gotoDeclarationHandler implementation="com.github.eltonsandre.plugin.idea.spring.assistant.gotodeclaration.LinkPropertiesKey"/>
+
         <completion.contributor language="yaml"
                                 implementationClass="in.oneton.idea.spring.assistant.plugin.suggestion.completion.YamlCompletionContributor"/>
+
+        <completion.contributor language="JAVA"
+                                implementationClass="com.github.eltonsandre.plugin.idea.spring.assistant.completion.annotation.AnnotationCompletionContributor"/>
 
         <completion.contributor language="Properties"
                                 implementationClass="in.oneton.idea.spring.assistant.plugin.suggestion.completion.PropertiesCompletionContributor"/>
@@ -51,9 +62,6 @@
         <lang.documentationProvider id="properties" language="Properties"
                                     implementationClass="in.oneton.idea.spring.assistant.plugin.suggestion.completion.PropertiesDocumentationProvider"/>
 
-        <!--        <documentationProvider-->
-        <!--                implementation="in.oneton.idea.spring.assistant.plugin.suggestion.completion.YamlDocumentationProvider"/>-->
-
         <psi.referenceContributor language="Properties"
                                   implementation="in.oneton.idea.spring.assistant.plugin.suggestion.completion.PropertiesReferenceContributor"/>
 
@@ -63,29 +71,13 @@
         <!--<documentationProvider-->
         <!--implementation="in.oneton.idea.spring.assistant.plugin.suggestion.completion.PropertiesDocumentationProvider"/>-->
 
-        <!--<annotator-->
-        <!--implementationClass="DuplicateKeyAnnotator"-->
-        <!--language="yaml"/>-->
-        <!--<annotator-->
-        <!--implementationClass="DataTypeCheckerAnnotator"-->
-        <!--language="yaml"/>-->
-        <!--<annotator-->
-        <!--implementationClass="PropertyNotInModelAnnotator"-->
-        <!--language="yaml"/>-->
+        <projectService id="spring-assistant-project-service-suggestion"
+                        serviceInterface="in.oneton.idea.spring.assistant.plugin.suggestion.service.SuggestionService"
+                        serviceImplementation="in.oneton.idea.spring.assistant.plugin.suggestion.service.SuggestionServiceImpl"/>
 
-        <projectService
-                serviceInterface="in.oneton.idea.spring.assistant.plugin.suggestion.service.SuggestionService"
-                serviceImplementation="in.oneton.idea.spring.assistant.plugin.suggestion.service.SuggestionServiceImpl"/>
-
-        <moduleBuilder
-                builderClass="in.oneton.idea.spring.assistant.plugin.initializr.InitializrModuleBuilder"
-                order="last"/>
+        <moduleBuilder id="spring-assistant-module-initializr"
+                       builderClass="in.oneton.idea.spring.assistant.plugin.initializr.InitializrModuleBuilder"
+                       order="last"/>
     </extensions>
-
-
-    <projectListeners>
-        <listener class="in.oneton.idea.spring.assistant.plugin.suggestion.component.Bootstrap"
-                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
-    </projectListeners>
 
 </idea-plugin>

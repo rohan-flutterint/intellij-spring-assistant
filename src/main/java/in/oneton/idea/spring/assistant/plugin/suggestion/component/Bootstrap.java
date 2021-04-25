@@ -3,7 +3,6 @@ package in.oneton.idea.spring.assistant.plugin.suggestion.component;
 import com.intellij.openapi.compiler.CompilationStatusListener;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompileScope;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManagerListener;
@@ -21,51 +20,51 @@ public class Bootstrap implements ProjectManagerListener {
 
 
     @Override
-    public void projectOpened(@NotNull Project project) {
+    public void projectOpened(@NotNull final Project project) {
         // This will trigger indexing
-        SuggestionService service = ServiceManager.getService(project, SuggestionService.class);
+        final var service = project.getService(SuggestionService.class);
 
         try {
-            debug(() -> log.debug("Project " + project.getName() + " is opened, indexing will start"));
+            this.debug(() -> log.debug("Project " + project.getName() + " is opened, indexing will start"));
             service.init(project);
         } finally {
-            debug(() -> log.debug("Indexing complete for project " + project.getName()));
+            this.debug(() -> log.debug("Indexing complete for project " + project.getName()));
         }
 
         try {
-            debug(() -> log.debug("Subscribing to compilation events for project " + project.getName()));
-            connection = project.getMessageBus().connect();
-            connection.subscribe(COMPILATION_STATUS, new CompilationStatusListener() {
+            this.debug(() -> log.debug("Subscribing to compilation events for project " + project.getName()));
+            this.connection = project.getMessageBus().connect();
+            this.connection.subscribe(COMPILATION_STATUS, new CompilationStatusListener() {
                 @Override
-                public void compilationFinished(boolean aborted, int errors, int warnings,
-                                                @NotNull CompileContext compileContext) {
-                    debug(() -> log
+                public void compilationFinished(final boolean aborted, final int errors, final int warnings,
+                                                @NotNull final CompileContext compileContext) {
+                    Bootstrap.this.debug(() -> log
                             .debug("Received compilation status event for project " + project.getName()));
                     if (errors == 0) {
-                        CompileScope projectCompileScope = compileContext.getProjectCompileScope();
-                        CompileScope compileScope = compileContext.getCompileScope();
+                        final CompileScope projectCompileScope = compileContext.getProjectCompileScope();
+                        final CompileScope compileScope = compileContext.getCompileScope();
                         if (projectCompileScope == compileScope) {
                             service.reIndex(project);
                         } else {
                             service.reindex(project, compileContext.getCompileScope().getAffectedModules());
                         }
-                        debug(() -> log.debug("Compilation status processed for project " + project.getName()));
+                        Bootstrap.this.debug(() -> log.debug("Compilation status processed for project " + project.getName()));
                     } else {
-                        debug(() -> log
+                        Bootstrap.this.debug(() -> log
                                 .debug("Skipping reindexing completely as there are " + errors + " errors"));
                     }
                 }
             });
-            debug(() -> log.debug("Subscribe to compilation events for project " + project.getName()));
-        } catch (Throwable e) {
+            this.debug(() -> log.debug("Subscribe to compilation events for project " + project.getName()));
+        } catch (final Throwable e) {
             log.error("Failed to subscribe to compilation events for project " + project.getName(), e);
         }
     }
 
     @Override
-    public void projectClosed(@NotNull Project project) {
+    public void projectClosed(@NotNull final Project project) {
         // TODO: Need to remove current project from index
-        connection.disconnect();
+        this.connection.disconnect();
     }
 
     /**
@@ -74,7 +73,7 @@ public class Bootstrap implements ProjectManagerListener {
      *
      * @param doWhenDebug code to execute when debug is enabled
      */
-    private void debug(Runnable doWhenDebug) {
+    private void debug(final Runnable doWhenDebug) {
         if (log.isDebugEnabled()) {
             doWhenDebug.run();
         }

@@ -1,21 +1,22 @@
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
-import com.vladsch.flexmark.util.ast.Document
 
 buildscript {
+    repositories {
+        mavenCentral()
+    }
     dependencies {
-        classpath 'com.vladsch.flexmark:flexmark:0.62.2' // '0.28.12'
+        classpath 'com.vladsch.flexmark:flexmark:0.64.0'
     }
 }
 
 plugins {
     id 'java'
     id 'idea'
-    id 'org.jetbrains.intellij' version '1.3.0'
+    id 'org.jetbrains.intellij' version '1.4.0'
 }
 
-group = 'in.oneton.idea.spring'
-version = '1.1.1'
+group = 'dev.eltonsandre.intellij'
 
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
@@ -46,10 +47,10 @@ dependencies {
     implementation 'org.apache.commons:commons-collections4:4.4'
     implementation 'com.miguelfonseca.completely:completely-core:0.9.0'
 
-    testImplementation(platform('org.junit:junit-bom:5.8.2'))
-    testImplementation 'org.mockito:mockito-core:4.0.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testImplementation platform('org.junit:junit-bom:5.8.2'),
+            'org.junit.jupiter:junit-jupiter',
+            'org.junit.jupiter:junit-jupiter-api',
+            'org.mockito:mockito-core:4.3.1'
 }
 
 clean.doFirst {
@@ -59,16 +60,15 @@ clean.doFirst {
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
     type.set('IC')
-    version.set('2021.3')
-    pluginName.set('intellij-spring-assistant')
+    version.set('2021.3.2')
+    downloadSources.set(true)
+    pluginName.set(project.name)
     plugins.set(['java', 'properties', 'yaml', 'maven', 'gradle'])
     updateSinceUntilBuild.set(true)
 }
 
 publishPlugin {
-    token.set(System.getenv('IJ_PLUGIN_TOKEN'))
-    //    username System.getProperty('ij_plugin_portal_login')
-    //    password System.getProperty('ij_plugin_portal_password')
+    token.set(System.getenv('JETBRAINS_PLUGIN_TOKEN'))
     channels.set(['eap', 'nightly', 'default'])
 }
 
@@ -78,24 +78,24 @@ patchPluginXml {
     changeNotes.set(provider { changeLogAsHtml() })
 }
 
+wrapper() {
+    gradleVersion = '7.3'
+    distributionUrl = distributionUrl.replace('bin', 'all')
+}
+
 String readmeXmlAsHtml() {
     final String readmeContent = new File(rootProject.uri('README.md')).text
     // since these images needs to shown from within intellij, lest put absolute urls so that the images & changelog will be visible
-            .replaceAll("help\\.gif", "https://raw.githubusercontent.com/eltonsandre/intellij-spring-assistant/" + version + "/help.gif")
-            .replaceAll("CHANGELOG.md", "https://github.com/eltonsandre/intellij-spring-assistant/blob/" + version + "/CHANGELOG.md")
+            .replaceAll("help\\.gif", "https://raw.githubusercontent.com/eltonsandre/intellij-spring-assistant/${version}/help.gif")
+            .replaceAll("CHANGELOG.md", "https://github.com/eltonsandre/intellij-spring-assistant/blob/${version}/CHANGELOG.md")
 
-    final Document readmeDocument = Parser.builder().build().parse(readmeContent)
+    final var readmeDocument = Parser.builder().build().parse(readmeContent)
     HtmlRenderer.builder().build().render(readmeDocument)
 }
 
 String changeLogAsHtml() {
-    Parser parser = Parser.builder().build()
-    HtmlRenderer renderer = HtmlRenderer.builder().build()
-    Document changeLogDocument = parser.parse(file(rootProject.uri('CHANGELOG.md')).text)
+    var parser = Parser.builder().build()
+    var renderer = HtmlRenderer.builder().build()
+    var changeLogDocument = parser.parse(file(rootProject.uri('CHANGELOG.md')).text)
     renderer.render(changeLogDocument)
-}
-
-wrapper() {
-    gradleVersion = '7.3'
-    distributionUrl = distributionUrl.replace('bin', 'all')
 }

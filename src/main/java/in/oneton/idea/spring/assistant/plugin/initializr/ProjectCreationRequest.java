@@ -20,6 +20,7 @@ import java.util.LinkedHashSet;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static com.github.eltonsandre.plugin.idea.spring.assistant.common.Constants.AMPERSAND;
 import static com.intellij.openapi.projectRoots.JavaSdkVersion.fromLanguageLevel;
 import static com.intellij.openapi.util.io.FileUtil.sanitizeFileName;
 import static com.intellij.pom.java.LanguageLevel.parse;
@@ -49,24 +50,24 @@ public class ProjectCreationRequest {
     private Version bootVersion;
     private LinkedHashSet<Dependency> dependencies = new LinkedHashSet<>();
 
-    private static String sanitize(String input) {
+    private static String sanitize(final String input) {
         return sanitizeFileName(input, false).replace(' ', '-').toLowerCase();
     }
 
-    public void setServerUrl(String serverUrl) {
+    public void setServerUrl(final String serverUrl) {
         if (!serverUrl.equals(this.serverUrl)) {
             this.serverUrl = serverUrl;
-            metadata = null;
+            this.metadata = null;
         }
     }
 
     public boolean isJavaVersionSet() {
-        return javaVersion != null;
+        return this.javaVersion != null;
     }
 
     @Nullable
     public Dependency getDependencyAtIndex(int index) {
-        Iterator<Dependency> iterator = dependencies.iterator();
+        final Iterator<Dependency> iterator = this.dependencies.iterator();
         Dependency dependency = null;
         while (index >= 0) {
             if (iterator.hasNext()) {
@@ -80,8 +81,8 @@ public class ProjectCreationRequest {
         return dependency;
     }
 
-    public int getIndexOfDependency(@NotNull Dependency dependency) {
-        Iterator<Dependency> iterator = dependencies.iterator();
+    public int getIndexOfDependency(@NotNull final Dependency dependency) {
+        final Iterator<Dependency> iterator = this.dependencies.iterator();
         int dependencyIndex = -1;
         int index = 0;
         while (iterator.hasNext()) {
@@ -94,48 +95,48 @@ public class ProjectCreationRequest {
         return dependencyIndex;
     }
 
-    public boolean addDependency(Dependency dependency) {
-        return dependencies.add(dependency);
+    public boolean addDependency(final Dependency dependency) {
+        return this.dependencies.add(dependency);
     }
 
-    public boolean removeDependency(Dependency dependency) {
-        return dependencies.removeIf(v -> v.equals(dependency));
+    public boolean removeDependency(final Dependency dependency) {
+        return this.dependencies.removeIf(v -> v.equals(dependency));
     }
 
-    public void removeIncompatibleDependencies(Version newVersion) {
-        dependencies.removeIf(dependency -> !dependency.isVersionCompatible(newVersion));
+    public void removeIncompatibleDependencies(final Version newVersion) {
+        this.dependencies.removeIf(dependency -> !dependency.isVersionCompatible(newVersion));
     }
 
     public int getDependencyCount() {
-        return dependencies.size();
+        return this.dependencies.size();
     }
 
-    public boolean containsDependency(Dependency dependency) {
-        return getIndexOfDependency(dependency) != -1;
+    public boolean containsDependency(final Dependency dependency) {
+        return this.getIndexOfDependency(dependency) != -1;
     }
 
     public boolean hasValidGroupId() {
-        return !isEmpty(groupId);
+        return !isEmpty(this.groupId);
     }
 
     public boolean hasValidArtifactId() {
-        return !isEmpty(artifactId) && sanitize(artifactId).equals(artifactId);
+        return !isEmpty(this.artifactId) && sanitize(this.artifactId).equals(this.artifactId);
     }
 
     public boolean hasValidVersion() {
-        return !isEmpty(version);
+        return !isEmpty(this.version);
     }
 
     public boolean hasValidName() {
-        return !isEmpty(name);
+        return !isEmpty(this.name);
     }
 
-    public boolean hasCompatibleJavaVersion(ModuleBuilder moduleBuilder,
-                                            WizardContext wizardContext) {
-        JavaSdkVersion wizardSdkVersion = from(wizardContext, moduleBuilder);
+    public boolean hasCompatibleJavaVersion(final ModuleBuilder moduleBuilder,
+                                            final WizardContext wizardContext) {
+        final JavaSdkVersion wizardSdkVersion = from(wizardContext, moduleBuilder);
         if (wizardSdkVersion != null) {
-            LanguageLevel selectedLanguageLevel = parse(javaVersion.getId());
-            JavaSdkVersion selectedSdkVersion =
+            final LanguageLevel selectedLanguageLevel = parse(this.javaVersion.getId());
+            final JavaSdkVersion selectedSdkVersion =
                     selectedLanguageLevel != null ? fromLanguageLevel(selectedLanguageLevel) : null;
             // only if selected java version is compatible with wizard version
             return selectedSdkVersion == null || wizardSdkVersion.isAtLeast(selectedSdkVersion);
@@ -144,33 +145,34 @@ public class ProjectCreationRequest {
     }
 
     public boolean hasValidPackageName() {
-        return !isEmpty(packageName) && getInstance().isQualifiedName(packageName);
+        return !isEmpty(this.packageName) && getInstance().isQualifiedName(this.packageName);
     }
 
     public boolean isServerUrlSet() {
-        return !isEmpty(serverUrl);
+        return !isEmpty(this.serverUrl);
     }
 
-  public String buildDownloadUrl() {
-    //@formatter:off
-    return serverUrl + type.getAction() + "?"
-        + nameAndValueAsUrlParam("type", type.getId()) + "&"
-        + nameAndValueAsUrlParam("groupId", groupId) + "&"
-        + nameAndValueAsUrlParam("artifactId", artifactId) + "&"
-        + nameAndValueAsUrlParam("version", version) + "&"
-        + nameAndValueAsUrlParam("name", name) + "&"
-        + nameAndValueAsUrlParam("description", description) + "&"
-        + nameAndValueAsUrlParam("packageName", packageName) + "&"
-        + nameAndValueAsUrlParam("language", language.getId()) + "&"
-        + nameAndValueAsUrlParam("javaVersion", javaVersion.getId()) + "&"
-        + nameAndValueAsUrlParam("packaging", packaging.getId()) + "&"
-        + nameAndValueAsUrlParam("bootVersion", bootVersion.toString()) + "&"
-        + dependencies.stream().map(Dependency::getId).map(dependencyId -> nameAndValueAsUrlParam("dependencies", dependencyId)).collect(joining("&"));
-    //@formatter:on
-  }
+    public String buildDownloadUrl() {//@formatter:off
+        return this.serverUrl + this.type.getAction() + "?" +
+                nameAndValueAsUrlParam( "type", this.type.getId()) + AMPERSAND +
+                nameAndValueAsUrlParam("groupId", this.groupId) + AMPERSAND +
+                nameAndValueAsUrlParam("artifactId", this.artifactId) + AMPERSAND +
+                nameAndValueAsUrlParam("version", this.version) + AMPERSAND +
+                nameAndValueAsUrlParam("name", this.name) + AMPERSAND +
+                nameAndValueAsUrlParam("description", this.description) + AMPERSAND +
+                nameAndValueAsUrlParam("packageName", this.packageName) + AMPERSAND +
+                nameAndValueAsUrlParam("language", this.language.getId()) + AMPERSAND +
+                nameAndValueAsUrlParam("javaVersion", this.javaVersion.getId()) + AMPERSAND +
+                nameAndValueAsUrlParam("packaging", this.packaging.getId()) + AMPERSAND +
+                nameAndValueAsUrlParam("bootVersion", this.bootVersion.toString()) + AMPERSAND +
+                this.dependencies.stream()
+                        .map(Dependency::getId)
+                        .map(dependencyId -> nameAndValueAsUrlParam("dependencies", dependencyId))
+                        .collect(joining(AMPERSAND));
+    }//@formatter:on
 
-    public <T> T getSetProperty(@NotNull Consumer<T> setter, @NotNull Supplier<T> getter,
-                                @Nullable T defaultValue) {
+    public <T> T getSetProperty(@NotNull final Consumer<T> setter, @NotNull final Supplier<T> getter,
+                                @Nullable final T defaultValue) {
         if (getter.get() == null) {
             setter.accept(defaultValue);
         }
@@ -178,8 +180,8 @@ public class ProjectCreationRequest {
     }
 
     @Nullable
-    public <T extends IdContainer> T getSetIdContainer(@NotNull Consumer<T> setter,
-                                                       @NotNull Supplier<T> getter, @NotNull Collection<T> containers, @Nullable String defaultId) {
+    public <T extends IdContainer> T getSetIdContainer(@NotNull final Consumer<T> setter,
+                                                       @NotNull final Supplier<T> getter, @NotNull final Collection<T> containers, @Nullable final String defaultId) {
         if (getter.get() == null && defaultId != null) {
             containers.stream().filter(packagingType -> packagingType.getId().equals(defaultId))
                     .findFirst().ifPresent(setter);
@@ -188,14 +190,14 @@ public class ProjectCreationRequest {
     }
 
     @Nullable
-    public Version getSetVersion(@NotNull Collection<IdAndName> containers,
-                                 @Nullable String defaultVersionId) {
-        if (bootVersion == null && defaultVersionId != null) {
-            Version defaultVersion = Version.parse(defaultVersionId);
+    public Version getSetVersion(@NotNull final Collection<IdAndName> containers,
+                                 @Nullable final String defaultVersionId) {
+        if (this.bootVersion == null && defaultVersionId != null) {
+            final Version defaultVersion = Version.parse(defaultVersionId);
             containers.stream().filter(idAndName -> idAndName.parseIdAsVersion().equals(defaultVersion))
-                    .findFirst().ifPresent(v -> bootVersion = v.parseIdAsVersion());
+                    .findFirst().ifPresent(v -> this.bootVersion = v.parseIdAsVersion());
         }
-        return bootVersion;
+        return this.bootVersion;
     }
 
 }

@@ -1,6 +1,5 @@
 package in.oneton.idea.spring.assistant.plugin.suggestion.component;
 
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.DumbService;
@@ -17,31 +16,31 @@ public class MavenProcessorTask implements MavenProjectsProcessorTask {
 
     private final Module module;
 
-    MavenProcessorTask(Module module) {
+    MavenProcessorTask(final Module module) {
         this.module = module;
     }
 
 
     @Override
-    public void perform(Project project, MavenEmbeddersManager mavenEmbeddersManager,
-                        MavenConsole mavenConsole, MavenProgressIndicator mavenProgressIndicator) {
-        debug(() -> log.debug(
+    public void perform(final Project project, final MavenEmbeddersManager mavenEmbeddersManager,
+                        final MavenConsole mavenConsole, final MavenProgressIndicator mavenProgressIndicator) {
+        this.debug(() -> log.debug(
                 "Project imported successfully, will trigger indexing via dumbservice for project "
                         + project.getName()));
         DumbService.getInstance(project).smartInvokeLater(() -> {
             log.debug("Will attempt to trigger indexing for project " + project.getName());
 
             try {
-                SuggestionService service = ServiceManager.getService(project, SuggestionService.class);
+                final var service = project.getService(SuggestionService.class);
 
-                if (!service.canProvideSuggestions(module)) {
-                    service.reindex(project, module);
+                if (!service.canProvideSuggestions(this.module)) {
+                    service.reindex(project, this.module);
                 } else {
-                    debug(() -> log.debug(
+                    this.debug(() -> log.debug(
                             "Index is already built, no point in rebuilding index for project " + project
                                     .getName()));
                 }
-            } catch (Throwable e) {
+            } catch (final Throwable e) {
                 log.error("Error occurred while indexing project " + project.getName(), e);
             }
         });
@@ -53,7 +52,7 @@ public class MavenProcessorTask implements MavenProjectsProcessorTask {
      *
      * @param doWhenDebug code to execute when debug is enabled
      */
-    private void debug(Runnable doWhenDebug) {
+    private void debug(final Runnable doWhenDebug) {
         if (log.isDebugEnabled()) {
             doWhenDebug.run();
         }

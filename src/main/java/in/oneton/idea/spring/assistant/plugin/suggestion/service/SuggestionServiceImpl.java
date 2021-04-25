@@ -31,6 +31,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -366,11 +367,16 @@ public class SuggestionServiceImpl implements SuggestionService {
      */
     private List<MetadataContainerInfo> computeContainersToRemove(OrderEnumerator orderEnumerator,
                                                                   Map<String, MetadataContainerInfo> seenContainerPathToContainerInfo) {
+
         Set<String> newContainerPaths = stream(orderEnumerator.recursively().classes().getRoots())
-                .flatMap(MetadataContainerInfo::getContainerArchiveOrFileRefs).collect(toSet());
-        Set<String> knownContainerPathSet = new THashSet<>(seenContainerPathToContainerInfo.keySet());
+                .flatMap(MetadataContainerInfo::getContainerArchiveOrFileRefs)
+                .collect(toSet());
+
+        Set<String> knownContainerPathSet = new HashSet<>(seenContainerPathToContainerInfo.keySet());
         knownContainerPathSet.removeAll(newContainerPaths);
-        return knownContainerPathSet.stream().map(seenContainerPathToContainerInfo::get)
+
+        return knownContainerPathSet.stream()
+                .map(seenContainerPathToContainerInfo::get)
                 .collect(toList());
     }
 

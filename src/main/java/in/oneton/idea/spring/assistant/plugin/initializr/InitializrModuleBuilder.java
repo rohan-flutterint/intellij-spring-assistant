@@ -1,5 +1,6 @@
 package in.oneton.idea.spring.assistant.plugin.initializr;
 
+import com.github.eltonsandre.plugin.idea.spring.assistant.common.Icons;
 import com.intellij.ide.util.projectWizard.JavaModuleBuilder;
 import com.intellij.ide.util.projectWizard.ModuleBuilder;
 import com.intellij.ide.util.projectWizard.ModuleNameLocationSettings;
@@ -22,7 +23,6 @@ import com.intellij.pom.java.LanguageLevel;
 import in.oneton.idea.spring.assistant.plugin.initializr.step.DependencySelectionStep;
 import in.oneton.idea.spring.assistant.plugin.initializr.step.ProjectDetailsStep;
 import in.oneton.idea.spring.assistant.plugin.initializr.step.ServerSelectionStep;
-import in.oneton.idea.spring.assistant.plugin.misc.Icons;
 import lombok.EqualsAndHashCode;
 import org.jdom.JDOMException;
 import org.jetbrains.annotations.NotNull;
@@ -80,7 +80,7 @@ public class InitializrModuleBuilder extends ModuleBuilder {
     @Override
     @Nullable
     public ModuleWizardStep modifySettingsStep(@NotNull final SettingsStep settingsStep) {
-        ModuleNameLocationSettings moduleNameLocationSettings = settingsStep.getModuleNameLocationSettings();
+        final ModuleNameLocationSettings moduleNameLocationSettings = settingsStep.getModuleNameLocationSettings();
         if (moduleNameLocationSettings != null) {
             moduleNameLocationSettings.setModuleName(this.request.getArtifactId());
         }
@@ -129,7 +129,7 @@ public class InitializrModuleBuilder extends ModuleBuilder {
 
     @Override
     public Icon getNodeIcon() {
-        return Icons.SpringBoot;
+        return Icons.springBoot;
     }
 
     @Nullable
@@ -145,7 +145,7 @@ public class InitializrModuleBuilder extends ModuleBuilder {
 
     @Override
     public String getPresentableName() {
-        return "Spring Assistant";
+        return "Spring Initializr";
     }
 
     @Override

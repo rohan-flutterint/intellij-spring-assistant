@@ -1,6 +1,5 @@
 package in.oneton.idea.spring.assistant.plugin.suggestion.component;
 
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.Key;
@@ -39,20 +38,20 @@ public class GradleReindexingProjectDataService
     }
 
     @Override
-    public void onSuccessImport(@NotNull Collection<DataNode<ModuleData>> imported,
-                                @Nullable ProjectData projectData, @NotNull Project project,
-                                @NotNull IdeModelsProvider modelsProvider) {
+    public void onSuccessImport(@NotNull final Collection<DataNode<ModuleData>> imported,
+                                @Nullable final ProjectData projectData, @NotNull final Project project,
+                                @NotNull final IdeModelsProvider modelsProvider) {
         if (projectData != null) {
-            debug(() -> log.debug(
+            this.debug(() -> log.debug(
                     "Gradle dependencies are updated for project, will trigger indexing via dumbservice for project "
                             + project.getName()));
             DumbService.getInstance(project).smartInvokeLater(() -> {
                 log.debug("Will attempt to trigger indexing for project " + project.getName());
-                SuggestionService service = ServiceManager.getService(project, SuggestionService.class);
+                final var service = project.getService(SuggestionService.class);
 
                 try {
-                    Module[] validModules = stream(modelsProvider.getModules()).filter(module -> {
-                        String externalRootProjectPath = getExternalRootProjectPath(module);
+                    final Module[] validModules = stream(modelsProvider.getModules()).filter(module -> {
+                        final String externalRootProjectPath = getExternalRootProjectPath(module);
                         return externalRootProjectPath != null && externalRootProjectPath
                                 .equals(projectData.getLinkedExternalProjectPath());
                     }).toArray(Module[]::new);
@@ -60,12 +59,12 @@ public class GradleReindexingProjectDataService
                     if (validModules.length > 0) {
                         service.reindex(project, validModules);
                     } else {
-                        debug(() -> log.debug(
+                        this.debug(() -> log.debug(
                                 "None of the modules " + moduleNamesAsStrCommaDelimited(modelsProvider.getModules(),
                                         true) + " are relevant for indexing, skipping for project " + project
                                         .getName()));
                     }
-                } catch (Throwable e) {
+                } catch (final Throwable e) {
                     log.error("Error occurred while indexing project " + project.getName() + " & modules "
                             + moduleNamesAsStrCommaDelimited(modelsProvider.getModules(), false), e);
                 }
@@ -79,7 +78,7 @@ public class GradleReindexingProjectDataService
      *
      * @param doWhenDebug code to execute when debug is enabled
      */
-    private void debug(Runnable doWhenDebug) {
+    private void debug(final Runnable doWhenDebug) {
         if (log.isDebugEnabled()) {
             doWhenDebug.run();
         }

@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author zhoumengjie02, darren
  */
-@ToString(of = "nodeNavigationPathDotDelimited")
+@ToString(onlyExplicitlyIncluded = true)
 public class ReferenceProxyElement extends LightElement {
 
     @Getter
@@ -25,12 +25,14 @@ public class ReferenceProxyElement extends LightElement {
     private final String value;
 
     @Getter
+    @ToString.Include
     private final String nodeNavigationPathDotDelimited;
 
     ReferenceProxyElement(@NotNull final PsiManager manager, @NotNull final Language language,
-                          String nodeNavigationPathDotDelimited, @NotNull final DocumentationProvider target,
-                          @Nullable String value) {
+                          final String nodeNavigationPathDotDelimited,
+                          @NotNull final DocumentationProvider target, @Nullable final String value) {
         super(manager, language);
+
         this.nodeNavigationPathDotDelimited = nodeNavigationPathDotDelimited;
         this.target = target;
         this.requestedForTargetValue = false;
@@ -39,6 +41,7 @@ public class ReferenceProxyElement extends LightElement {
 
     @Override
     public String getText() {
-        return nodeNavigationPathDotDelimited;
+        return this.nodeNavigationPathDotDelimited;
     }
+
 }

@@ -25,6 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import static com.github.eltonsandre.plugin.idea.spring.assistant.common.Constants.PROP_DOT;
 import static com.intellij.codeInsight.completion.CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED;
 import static com.intellij.codeInsight.documentation.DocumentationManager.createHyperlink;
 import static com.intellij.openapi.util.text.StringUtil.containsChar;
@@ -46,7 +47,7 @@ public class GenericUtil {
     private static final Pattern methodToFragmentConverter = Pattern.compile("(.+)\\.(.+)\\(.*\\)");
 
     public static String typeForDocumentationNavigation(final String type) {
-        return type.replaceAll("\\$", ".");
+        return type.replaceAll("\\$", PROP_DOT);
     }
 
     public static void updateClassNameAsJavadocHtml(final StringBuilder buffer, final String type) {
@@ -226,9 +227,9 @@ public class GenericUtil {
                 .map(YAMLKeyValue.class::cast).map(YAMLKeyValue::getName);
     }
 
-    public static List<String> getAncestralKey(String elementVal) {
-        String ancestralStr = elementVal.replaceAll("\\[\\d+]", "");
-        List<String> split = Splitter.on(".").splitToList(ancestralStr);
+    public static List<String> getAncestralKey(final String elementVal) {
+        final String ancestralStr = elementVal.replaceAll("\\[\\d+]", "");
+        final List<String> split = Splitter.on(".").splitToList(ancestralStr);
         if (split.size() == 1) {
             return null;
         }
