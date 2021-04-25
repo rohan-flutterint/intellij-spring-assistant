@@ -45,6 +45,14 @@
     </extensionPoints>
 
     <extensions defaultExtensionNs="com.intellij">
+        <projectService id="spring-assistant-project-service-suggestion"
+                        serviceInterface="in.oneton.idea.spring.assistant.plugin.suggestion.service.SuggestionService"
+                        serviceImplementation="in.oneton.idea.spring.assistant.plugin.suggestion.service.SuggestionServiceImpl"/>
+
+        <moduleBuilder id="spring-assistant-module-initializr"
+                       builderClass="in.oneton.idea.spring.assistant.plugin.initializr.InitializrModuleBuilder"
+                       order="last"/>
+
         <gotoDeclarationHandler implementation="com.github.eltonsandre.plugin.idea.spring.assistant.gotodeclaration.LinkPropertiesKey"/>
 
         <completion.contributor language="yaml"
@@ -65,19 +73,31 @@
         <psi.referenceContributor language="Properties"
                                   implementation="in.oneton.idea.spring.assistant.plugin.suggestion.completion.PropertiesReferenceContributor"/>
 
-        <!--        <lang.findUsagesProvider language="Properties" order="first"-->
-        <!--                                 implementationClass="in.oneton.idea.spring.assistant.plugin.suggestion.completion.CustomPropertiesFindUsagesProvider"/>-->
+        <fileType id="spring-cloud-config-yaml" name="spring-cloud-config-yaml"
+                  patterns="bootstrap.yml;bootstrap.yaml;bootstrap*.yml;bootstrap*.yaml"
+                  implementationClass="com.github.eltonsandre.plugin.idea.spring.assistant.filetype.BootstrapYmlFileType"/>
 
-        <!--<documentationProvider-->
-        <!--implementation="in.oneton.idea.spring.assistant.plugin.suggestion.completion.PropertiesDocumentationProvider"/>-->
+        <fileType id="spring-cloud-config-properties" name="spring-cloud-config-properties"
+                  patterns="bootstrap.properties;bootstrap*.properties"
+                  implementationClass="com.github.eltonsandre.plugin.idea.spring.assistant.filetype.BootstrapPropertiesFileType"/>
 
-        <projectService id="spring-assistant-project-service-suggestion"
-                        serviceInterface="in.oneton.idea.spring.assistant.plugin.suggestion.service.SuggestionService"
-                        serviceImplementation="in.oneton.idea.spring.assistant.plugin.suggestion.service.SuggestionServiceImpl"/>
+        <fileType id="spring-application-config-yaml" name="spring-application-config-yaml"
+                  patterns="application.yml;application.yaml;application*.yml;application*.yaml"
+                  implementationClass="com.github.eltonsandre.plugin.idea.spring.assistant.filetype.ApplicationYamlFileType"/>
 
-        <moduleBuilder id="spring-assistant-module-initializr"
-                       builderClass="in.oneton.idea.spring.assistant.plugin.initializr.InitializrModuleBuilder"
-                       order="last"/>
+        <fileType id="spring-application-config-properties" name="spring-application-config-properties"
+                  patterns="application.properties;application*.properties"
+                  implementationClass="com.github.eltonsandre.plugin.idea.spring.assistant.filetype.ApplicationPropertiesFileType"/>
+
+        <fileType id="spring-configuration-metadata" name="spring-configuration-metadata"
+                  patterns="spring-configuration-metadata.json;additional-spring-configuration-metadata.json"
+                  implementationClass="com.github.eltonsandre.plugin.idea.spring.assistant.filetype.SpringConfigurationMetadataFileType"/>
+
+        <!-- <lang.findUsagesProvider language="Properties" order="first"-->
+        <!--  implementationClass="in.oneton.idea.spring.assistant.plugin.suggestion.completion.CustomPropertiesFindUsagesProvider"/>-->
+        <!-- <annotator language="yaml" implementationClass="DuplicateKeyAnnotator"/>-->
+        <!-- <annotator language="yaml" implementationClass="DataTypeCheckerAnnotator"/>-->
+        <!-- <annotator language="yaml" implementationClass="PropertyNotInModelAnnotator"/>-->
     </extensions>
 
 </idea-plugin>
