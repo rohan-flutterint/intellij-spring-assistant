@@ -78,7 +78,7 @@ Feel free to let me know what else you want added via the [issues](https://githu
 
 Suggestions, feedback and other comments welcome via [@1tontech](https://twitter.com/1tontech) on Twitter
 
-[intellij-spring-assistant-1.0.1.zip](dist/intellij-spring-assistant-1.0.1.zip)
+[intellij-spring-assistant-1.0.3.zip](dist/intellij-spring-assistant-1.0.3.zip)
 
 ## Changelog
 

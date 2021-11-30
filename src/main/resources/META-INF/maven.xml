@@ -8,12 +8,8 @@
 
     <project-components>
         <component>
-            <interface-class>
-                in.oneton.idea.spring.assistant.plugin.suggestion.component.MavenReIndexingDependencyChangeSubscriber
-            </interface-class>
-            <implementation-class>
-                in.oneton.idea.spring.assistant.plugin.suggestion.component.MavenReIndexingDependencyChangeSubscriberImpl
-            </implementation-class>
+            <interface-class>in.oneton.idea.spring.assistant.plugin.suggestion.component.MavenReIndexingDependencyChangeSubscriber</interface-class>
+            <implementation-class>in.oneton.idea.spring.assistant.plugin.suggestion.component.MavenReIndexingDependencyChangeSubscriberImpl</implementation-class>
         </component>
     </project-components>
 

@@ -6,6 +6,9 @@ buildscript {
     repositories {
         mavenLocal()
         mavenCentral()
+        gradlePluginPortal()
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+        maven { url 'https://dl.bintray.com/jetbrains/intellij-plugin-service' }
     }
     dependencies {
         classpath 'com.vladsch.flexmark:flexmark:0.62.2'
@@ -15,12 +18,11 @@ buildscript {
 plugins {
     id 'java'
     id 'idea'
-    id 'org.jetbrains.intellij' version '0.7.3'
+    id 'org.jetbrains.intellij' version '1.3.0'
 }
 
-
 group = 'in.oneton.idea.spring'
-version = '1.0.2'
+version = '1.0.3'
 
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
@@ -46,13 +48,13 @@ configurations {
 dependencies {
 
     ['annotationProcessor', 'compileOnly', 'testAnnotationProcessor', 'testCompileOnly']
-            .each { conf -> add(conf, 'org.projectlombok:lombok:1.18.20') }
+            .each { conf -> add(conf, 'org.projectlombok:lombok:1.18.22') }
 
     implementation 'org.apache.commons:commons-collections4:4.4'
     implementation 'com.miguelfonseca.completely:completely-core:0.9.0'
 
     testImplementation(platform('org.junit:junit-bom:5.7.2'))
-    testImplementation 'org.mockito:mockito-core:3.11.2'
+    testImplementation 'org.mockito:mockito-core:4.0.0'
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
 }
@@ -63,26 +65,24 @@ clean.doFirst {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    type = 'IC'
-    version = '2021.2'
-    pluginName = 'intellij-spring-assistant'
-    plugins = ['java', 'properties', 'yaml', 'maven', 'gradle']
-    updateSinceUntilBuild false
+    type.set('IC')
+    version.set('2021.3')
+    pluginName.set('intellij-spring-assistant')
+    plugins.set(['java', 'properties', 'yaml', 'maven', 'gradle'])
+    updateSinceUntilBuild.set(true)
 }
 
 publishPlugin {
-    token System.getenv('IJ_PLUGIN_TOKEN')
+    token.set(System.getenv('IJ_PLUGIN_TOKEN'))
     //    username System.getProperty('ij_plugin_portal_login')
     //    password System.getProperty('ij_plugin_portal_password')
-    channels 'eap', 'nightly', 'default'
+    channels.set(['eap', 'nightly', 'default'])
 }
 
-
 patchPluginXml {
-    sinceBuild '203.1.0'
-    untilBuild '212.*'
-    pluginDescription readmeXmlAsHtml()
-    changeNotes changeLogAsHtml()
+    sinceBuild.set('203')
+    pluginDescription.set(provider { readmeXmlAsHtml() })
+    changeNotes.set(provider { changeLogAsHtml() })
 }
 
 String readmeXmlAsHtml() {
@@ -98,6 +98,11 @@ String readmeXmlAsHtml() {
 String changeLogAsHtml() {
     Parser parser = Parser.builder().build()
     HtmlRenderer renderer = HtmlRenderer.builder().build()
-    Document changeLogDocument = parser.parse(new File(rootProject.uri('CHANGELOG.md')).text)
+    Document changeLogDocument = parser.parse(file(rootProject.uri('CHANGELOG.md')).text)
     renderer.render(changeLogDocument)
+}
+
+wrapper() {
+    gradleVersion = '7.3'
+    distributionUrl = distributionUrl.replace('bin', 'all')
 }
