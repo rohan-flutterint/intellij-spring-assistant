@@ -1,7 +1,6 @@
-### Since 1.2.0-RC.2 (release candidate - 25 Apr 2021):
+### Since 1.2.0 (25 Apr 2021):
 
-WIP
-
+- Fixed bugs
 - new feature - link properties
 - auto complete keys in annotations by Spring
 - Test: IntelliJ IDEA 2021.1 (Community Edition) Build #IC-211.xx

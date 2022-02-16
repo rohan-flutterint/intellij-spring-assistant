@@ -59,27 +59,14 @@
         <lang.documentationProvider id="properties" language="Properties"
                                     implementationClass="in.oneton.idea.spring.assistant.plugin.suggestion.completion.PropertiesDocumentationProvider"/>
 
-        <!--        <documentationProvider-->
-        <!--                implementation="in.oneton.idea.spring.assistant.plugin.suggestion.completion.YamlDocumentationProvider"/>-->
-
         <psi.referenceContributor language="Properties"
                                   implementation="in.oneton.idea.spring.assistant.plugin.suggestion.completion.PropertiesReferenceContributor"/>
 
-        <!--        <lang.findUsagesProvider language="Properties" order="first"-->
-        <!--                                 implementationClass="in.oneton.idea.spring.assistant.plugin.suggestion.completion.CustomPropertiesFindUsagesProvider"/>-->
-
-        <!--<documentationProvider-->
-        <!--implementation="in.oneton.idea.spring.assistant.plugin.suggestion.completion.PropertiesDocumentationProvider"/>-->
-
-        <!--<annotator-->
-        <!--implementationClass="DuplicateKeyAnnotator"-->
-        <!--language="yaml"/>-->
-        <!--<annotator-->
-        <!--implementationClass="DataTypeCheckerAnnotator"-->
-        <!--language="yaml"/>-->
-        <!--<annotator-->
-        <!--implementationClass="PropertyNotInModelAnnotator"-->
-        <!--language="yaml"/>-->
+        <!-- <lang.findUsagesProvider language="Properties" order="first"-->
+        <!--  implementationClass="in.oneton.idea.spring.assistant.plugin.suggestion.completion.CustomPropertiesFindUsagesProvider"/>-->
+        <!-- <annotator language="yaml" implementationClass="DuplicateKeyAnnotator"/>-->
+        <!-- <annotator language="yaml" implementationClass="DataTypeCheckerAnnotator"/>-->
+        <!-- <annotator language="yaml" implementationClass="PropertyNotInModelAnnotator"/>-->
 
         <projectService
                 serviceInterface="in.oneton.idea.spring.assistant.plugin.suggestion.service.SuggestionService"
@@ -89,7 +76,6 @@
                 builderClass="in.oneton.idea.spring.assistant.plugin.initializr.InitializrModuleBuilder"
                 order="last"/>
     </extensions>
-
 
     <projectListeners>
         <listener class="in.oneton.idea.spring.assistant.plugin.suggestion.component.Bootstrap"
