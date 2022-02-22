@@ -3,10 +3,8 @@
     <id>dev.eltonsandre.intellij.spring.assistant.plugin</id>
     <name>Spring Initializr and Assistant</name>
 
-    <!-- Will be auto populated by plugin -->
     <vendor email="eltonsandre@gmail.com" url="https://github.com/eltonsandre">eltonsandre</vendor>
 
-    <!-- Will be auto populated by plugin -->
     <description>
         <![CDATA[
               <h3>Autocomplete wizard for configuration property with spring</h3>
@@ -61,6 +59,15 @@
 
         <psi.referenceContributor language="Properties"
                                   implementation="in.oneton.idea.spring.assistant.plugin.suggestion.completion.PropertiesReferenceContributor"/>
+
+        <fileType name="spring-application-config-yaml" patterns="application*.y*ml"
+                  implementationClass="com.github.eltonsandre.plugin.spring.filetype.YamlFileType"/>
+
+        <fileType name="spring-application-config-properties" patterns="application*.properties"
+                  implementationClass="com.github.eltonsandre.plugin.spring.filetype.PropertiesFileType"/>
+
+        <fileType name="spring-configuration-metadata" patterns="*spring-configuration-metadata.json"
+                  implementationClass="com.github.eltonsandre.plugin.spring.filetype.SpringConfigurationMetadataJson"/>
 
         <!-- <lang.findUsagesProvider language="Properties" order="first"-->
         <!--  implementationClass="in.oneton.idea.spring.assistant.plugin.suggestion.completion.CustomPropertiesFindUsagesProvider"/>-->

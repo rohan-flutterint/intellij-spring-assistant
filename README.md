@@ -4,12 +4,14 @@
 
 ## Features:
 
+### Spring Intilializr
+
 1. Allows you to bootstrap new project & new module using `File -> New -> Project -> Spring Assistant` & `File -> New -> Module -> Spring Assistant`
    wizards. Looks & Feel resembles Intellij Ultimate, but with less bells & whistles
 
-### Spring Intilializr
-
 ![Spring Intilializr in action](https://github.com/eltonsandre/intellij-spring-assistant/blob/feature/link-to-properties/demo/initializr.gif?raw=true)
+
+### Autocomplete configuration properties
 
 1. Autocompletion of the configuration properties in your `yaml`/`properties` files based on the spring boot's autoconfiguration jars are present in
    the classpath
@@ -19,15 +21,14 @@
    would show `server.port` as a suggestion
 4. Quick documentation for groups & properties (not all groups & properties will have documentation, depends on whether the original author specified
    documentation or not for any given element)
-
-### Autocomplete configuration properties
-
-![Autocomplete in action](https://github.com/eltonsandre/intellij-spring-assistant/blob/feature/link-to-properties/demo/autocomplete-config.gif?raw=true)
+   ![Autocomplete in action](https://github.com/eltonsandre/intellij-spring-assistant/blob/feature/link-to-properties/demo/autocomplete-config.gif?raw=true)
 
 ### Link to configuration properties
 
-![link in action](https://github.com/eltonsandre/intellij-spring-assistant/blob/feature/link-to-properties/demo/link-config.gif?raw=true)
 1. Ctrl+click to go to property or code
+
+![link in action](https://github.com/eltonsandre/intellij-spring-assistant/blob/feature/link-to-properties/demo/link-config.gif?raw=true)
+
 ## Usage
 
 ---
@@ -54,25 +55,25 @@ For this to work, you need to ensure the following steps are followed for your p
 Add the following build configuration. You can use the [propdeps-plugin](https://github.com/spring-gradle-plugins/propdeps-plugin) for `optional`
 scope (as we dont need `spring-boot-configuration-processor` as a dependency in the generated jar/war)
 
-    ```gradle
-    dependencies {
-        optional "org.springframework.boot:spring-boot-configuration-processor"
-    }
+```groovy
+dependencies {
+    optional 'org.springframework.boot:spring-boot-configuration-processor'
+}
 
-    compileJava.dependsOn(processResources)
-    ```
+compileJava.dependsOn(processResources)
+```
 
 #### *For Maven*
 
 Add the following dependency
 
-    ```xml
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-configuration-processor</artifactId>
-        <optional>true</optional>
-    </dependency>
-    ```
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-configuration-processor</artifactId>
+    <optional>true</optional>
+</dependency>
+```
 
 3. (**OPTIONAL**) If intellij is generating build artfacts to `output` directory instead of gradle's default `build` directory, then you may need
    to `File | Settings | Build, Execution, Deployment | Build Tools | Gradle | Runner => Delegate IDE build/run actions to gradle` & restart the IDE.
@@ -102,6 +103,10 @@ Feel free to let me know what else you want added via the [issues](https://githu
 ## Changelog
 
 See [here](CHANGELOG.md)
+
+---
+
+### This tool is free for personal and commercial usage. [Donations](https://www.paypal.com/donate/?business=CZ9QNZ67X6RPA&no_recurring=0&item_name=Intellij+Spring+Intilializr+%26+assistant%3A%0AThis+tool+is+free+for+personal+and+commercial+usage.+Donations+are+very+welcome+though&currency_code=USD) are very welcome though.
 
 ---
 

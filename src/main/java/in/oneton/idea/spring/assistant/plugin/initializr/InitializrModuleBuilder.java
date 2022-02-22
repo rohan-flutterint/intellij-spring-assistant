@@ -129,7 +129,7 @@ public class InitializrModuleBuilder extends ModuleBuilder {
 
     @Override
     public Icon getNodeIcon() {
-        return Icons.SpringBoot;
+        return Icons.SpringInitializr;
     }
 
     @Nullable
