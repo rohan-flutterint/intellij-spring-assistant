@@ -21,7 +21,8 @@ public enum FileType {
             return new YamlValueInsertHandler();
         }
 
-    }, PROPERTIES {
+    },
+    PROPERTIES {
         @Override
         public InsertHandler<LookupElement> newKeyInsertHandler() {
             return new PropertiesKeyInsertHandler();

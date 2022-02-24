@@ -29,13 +29,19 @@ public class ReferenceProxyElement extends LightElement {
     private final String nodeNavigationPathDotDelimited;
 
     ReferenceProxyElement(@NotNull final PsiManager manager, @NotNull final Language language,
-                          final String nodeNavigationPathDotDelimited,
-                          @NotNull final DocumentationProvider target, @Nullable final String value) {
+                          final String nodeNavigationPathDotDelimited, @NotNull final DocumentationProvider target,
+                          @Nullable final String value) {
+        this(manager, language, nodeNavigationPathDotDelimited, target, false, value);
+    }
+    
+    ReferenceProxyElement(@NotNull final PsiManager manager, @NotNull final Language language,
+                          final String nodeNavigationPathDotDelimited, @NotNull final DocumentationProvider target,
+                          final boolean requestedForTargetValue, @Nullable final String value) {
         super(manager, language);
 
         this.nodeNavigationPathDotDelimited = nodeNavigationPathDotDelimited;
         this.target = target;
-        this.requestedForTargetValue = false;
+        this.requestedForTargetValue = requestedForTargetValue;
         this.value = value;
     }
 

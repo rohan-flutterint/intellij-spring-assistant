@@ -59,7 +59,8 @@ public class AnnotationCompletionProvider extends CompletionProvider<CompletionP
         final String queryWithDotDelimitedPrefixes = this.getQueryWithDotDelimitedPrefixes(textOrigin);
         final List<String> ancestralKeys = GenericUtil.getAncestralKey(textContext);
         final List<LookupElement> suggestions = service.findSuggestionsForQueryPrefix(
-                FileType.JAVA, element, ancestralKeys, queryWithDotDelimitedPrefixes, null);
+                FileType.valueOf(element.getLanguage().getDisplayName().toUpperCase()),
+                element, ancestralKeys, queryWithDotDelimitedPrefixes, null);
 
         resultSet = resultSet.withPrefixMatcher(queryWithDotDelimitedPrefixes);
         if (suggestions != null) {

@@ -5,11 +5,10 @@ import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.lang.properties.PropertiesLanguage;
 import com.intellij.patterns.PlatformPatterns;
 
-public class PropertiesCompletionContributor
-        extends CompletionContributor {
+public class PropertiesCompletionContributor extends CompletionContributor {
 
     public PropertiesCompletionContributor() {
-        extend(CompletionType.BASIC,
+        this.extend(CompletionType.BASIC,
                 PlatformPatterns.psiElement().withLanguage(PropertiesLanguage.INSTANCE),
                 new PropertiesCompletionProvider());
     }

@@ -2,6 +2,10 @@ package com.github.eltonsandre.plugin.idea.spring.assistant.gotodeclaration;
 
 import com.github.eltonsandre.plugin.idea.spring.assistant.common.Constants;
 import com.github.eltonsandre.plugin.idea.spring.assistant.common.annotation.SpringAnnotationEnum;
+import com.github.eltonsandre.plugin.idea.spring.assistant.filetype.ApplicationPropertiesFileType;
+import com.github.eltonsandre.plugin.idea.spring.assistant.filetype.ApplicationYamlFileType;
+import com.github.eltonsandre.plugin.idea.spring.assistant.filetype.BootstrapPropertiesFileType;
+import com.github.eltonsandre.plugin.idea.spring.assistant.filetype.BootstrapYmlFileType;
 import com.intellij.lang.properties.IProperty;
 import com.intellij.lang.properties.PropertiesFileType;
 import com.intellij.lang.properties.PropertiesImplUtil;
@@ -38,7 +42,7 @@ public final class LinkGoToFilePropertieKey {
 
     private static final Logger log = Logger.getInstance(LinkGoToFilePropertieKey.class);
 
-    public static PsiElement[] toPropertieKey(@NotNull final PsiElement sourceElement) {
+    public static PsiElement[] javaToPropertieKey(@NotNull final PsiElement sourceElement) {
         final IElementType tokenType = ((PsiJavaToken) sourceElement).getTokenType();
         if (tokenType != JavaTokenType.STRING_LITERAL) {
             return new PsiElement[0];
@@ -56,17 +60,22 @@ public final class LinkGoToFilePropertieKey {
             return new PsiElement[0];
         }
 
+        return toPropertieKey(sourceElement, SpringAnnotationEnum.fromQualifiedName(annotationName));
+    }
+
+    private static PsiElement[] toPropertieKey(@NotNull final PsiElement sourceElement, final SpringAnnotationEnum springAnnotationEnum) {
         final var project = sourceElement.getProject();
-        final Collection<VirtualFile> files = FileTypeIndex.getFiles(YAMLFileType.YML, GlobalSearchScope.projectScope(project));
-        files.addAll(FileTypeIndex.getFiles(PropertiesFileType.INSTANCE, GlobalSearchScope.projectScope(project)));
+        final Collection<VirtualFile> files = FileTypeIndex.getFiles(ApplicationYamlFileType.INSTANCE, GlobalSearchScope.projectScope(project));
+        files.addAll(FileTypeIndex.getFiles(ApplicationPropertiesFileType.INSTANCE, GlobalSearchScope.projectScope(project)));
+        files.addAll(FileTypeIndex.getFiles(BootstrapYmlFileType.INSTANCE, GlobalSearchScope.projectScope(project)));
+        files.addAll(FileTypeIndex.getFiles(BootstrapPropertiesFileType.INSTANCE, GlobalSearchScope.projectScope(project)));
 
         if (CollectionUtils.isEmpty(files)) {
             return new PsiElement[0];
         }
 
         final var instance = PsiManager.getInstance(sourceElement.getProject());
-        final String key = qualifiedKey(SpringAnnotationEnum.fromQualifiedName(annotationName).isHasPlaceholder(),
-                sourceElement.getText());
+        final String key = qualifiedKey(springAnnotationEnum.isHasPlaceholder(), sourceElement.getText());
 
         final List<PsiElement> result = new ArrayList<>(files.size());
 
@@ -74,32 +83,36 @@ public final class LinkGoToFilePropertieKey {
             final PsiFile psiFile = Objects.requireNonNull(instance.findFile(file));
 
             if (YAMLFileType.YML.equals(psiFile.getFileType())) {
-                final var yamlFile = (YAMLFile) psiFile;
-                yamlFile.getDocuments().forEach(yamlDocument -> {
-                    final YAMLKeyValue yamlKeyValue = YAMLUtil.getQualifiedKeyInDocument(yamlDocument, List.of(key.split(Constants.REGEX_DOT)));
-                    if (Objects.nonNull(yamlKeyValue)) {
-                        result.add(new YAMLKeyValueImpl(yamlKeyValue.getNode()));
-                    }
-                });
+                addNavegationItemYmlFiles(key, result, (YAMLFile) psiFile);
             }
 
-            if (PropertiesFileType.INSTANCE.getLanguage().getID().equals(psiFile.getFileType().getName())) {
-                log.debug("PropertiesFileType " + psiFile);
-                final PropertiesFile propertiesFile = PropertiesImplUtil.getPropertiesFile(psiFile);
-
-                final IProperty propertyByKey;
-                if (Objects.nonNull(propertiesFile)) {
-                    propertyByKey = propertiesFile.findPropertyByKey(key);
-                    if (Objects.nonNull(propertyByKey)) {
-                        result.add(new PropertyNavigationItem(propertyByKey.getPsiElement().getNode()));
-                    }
-                }
+            if (PropertiesFileType.INSTANCE.getDefaultExtension().equals(psiFile.getFileType().getDefaultExtension())) {
+                addNavegationItemPropertiesFiles(key, result, PropertiesImplUtil.getPropertiesFile(psiFile));
             }
 
         });
 
         final var psiElements = new PsiElement[result.size()];
         return result.toArray(psiElements);
+    }
+
+    private static void addNavegationItemYmlFiles(final String key, final List<PsiElement> result, final YAMLFile psiFile) {
+        psiFile.getDocuments().forEach(yamlDocument -> {
+            final YAMLKeyValue yamlKeyValue = YAMLUtil.getQualifiedKeyInDocument(yamlDocument, List.of(key.split(Constants.REGEX_DOT)));
+            if (Objects.nonNull(yamlKeyValue)) {
+                result.add(new YAMLKeyValueImpl(yamlKeyValue.getNode()));
+            }
+        });
+    }
+
+    private static void addNavegationItemPropertiesFiles(final String key, final List<PsiElement> result, final PropertiesFile propertiesFile) {
+        final IProperty propertyByKey;
+        if (Objects.nonNull(propertiesFile)) {
+            propertyByKey = propertiesFile.findPropertyByKey(key);
+            if (Objects.nonNull(propertyByKey)) {
+                result.add(new PropertyNavigationItem(propertyByKey.getPsiElement().getNode()));
+            }
+        }
     }
 
 

@@ -17,6 +17,7 @@ import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction;
@@ -33,23 +34,25 @@ public class YamlKeyInsertHandler implements InsertHandler<LookupElement> {
 
     @Override
     public void handleInsert(final @NotNull InsertionContext context, final @NotNull LookupElement lookupElement) {
-        if (!nextCharAfterSpacesAndQuotesIsColon(getStringAfterAutoCompletedValue(context))) {
-            String existingIndentation = getExistingIndentation(context, lookupElement);
-            Suggestion suggestion = (Suggestion) lookupElement.getObject();
-            String indentPerLevel = getCodeStyleIntent(context);
-            Module module = findModule(context);
-            String suggestionWithCaret =
-                    getSuggestionReplacementWithCaret(module, suggestion, existingIndentation,
-                            indentPerLevel);
-            String suggestionWithoutCaret = suggestionWithCaret.replace(CARET, "");
+        if (!this.nextCharAfterSpacesAndQuotesIsColon(this.getStringAfterAutoCompletedValue(context))) {
+            final String existingIndentation = this.getExistingIndentation(context, lookupElement);
+            final Suggestion suggestion = (Suggestion) lookupElement.getObject();
+            final String indentPerLevel = getCodeStyleIntent(context);
+            final Module module = findModule(context);
 
-            PsiElement currentElement = context.getFile().findElementAt(context.getStartOffset());
-            assert currentElement != null : "no element at " + context.getStartOffset();
+            final String suggestionWithCaret = this.getSuggestionReplacementWithCaret(module, suggestion, existingIndentation, indentPerLevel);
+            final String suggestionWithoutCaret = suggestionWithCaret.replace(CARET, StringUtils.EMPTY);
+
+            final PsiElement currentElement = context.getFile().findElementAt(context.getStartOffset());
+
+            if (Objects.isNull(currentElement)) {
+                throw new AssertionError("no element at " + context.getStartOffset());
+            }
 
             this.deleteLookupTextAndRetrieveOldValue(context, currentElement);
 
             insertStringAtCaret(context.getEditor(), suggestionWithoutCaret, false, true,
-                    getCaretIndex(suggestionWithCaret));
+                    this.getCaretIndex(suggestionWithCaret));
         }
     }
 
@@ -58,8 +61,8 @@ public class YamlKeyInsertHandler implements InsertHandler<LookupElement> {
     }
 
     private String getExistingIndentation(final InsertionContext context, final LookupElement item) {
-        final String stringBeforeAutoCompletedValue = getStringBeforeAutoCompletedValue(context, item);
-        return getExistingIndentationInRowStartingFromEnd(stringBeforeAutoCompletedValue);
+        final String stringBeforeAutoCompletedValue = this.getStringBeforeAutoCompletedValue(context, item);
+        return this.getExistingIndentationInRowStartingFromEnd(stringBeforeAutoCompletedValue);
     }
 
     @NotNull
@@ -68,8 +71,7 @@ public class YamlKeyInsertHandler implements InsertHandler<LookupElement> {
     }
 
     @NotNull
-    private String getStringBeforeAutoCompletedValue(final InsertionContext context,
-                                                     final LookupElement item) {
+    private String getStringBeforeAutoCompletedValue(final InsertionContext context, final LookupElement item) {
         return context.getDocument().getText()
                 .substring(0, context.getTailOffset() - item.getLookupString().length());
     }
@@ -93,21 +95,20 @@ public class YamlKeyInsertHandler implements InsertHandler<LookupElement> {
             }
             count++;
         }
-        return val.substring(val.length() - count).replaceAll("-", " ");
+        return val.substring(val.length() - count).replace("-", StringUtils.SPACE);
     }
 
-    private void deleteLookupTextAndRetrieveOldValue(InsertionContext context,
-                                                     @NotNull PsiElement elementAtCaret) {
+    private void deleteLookupTextAndRetrieveOldValue(final InsertionContext context, @NotNull final PsiElement elementAtCaret) {
         if (elementAtCaret.getNode().getElementType() != YAMLTokenTypes.SCALAR_KEY) {
-            deleteLookupPlain(context);
+            this.deleteLookupPlain(context);
         } else {
-            YAMLKeyValue keyValue = PsiTreeUtil.getParentOfType(elementAtCaret, YAMLKeyValue.class);
+            final YAMLKeyValue keyValue = PsiTreeUtil.getParentOfType(elementAtCaret, YAMLKeyValue.class);
             assert keyValue != null;
             context.commitDocument();
 
             // TODO: Whats going on here?
             if (keyValue.getValue() != null) {
-                YAMLKeyValue dummyKV =
+                final YAMLKeyValue dummyKV =
                         YAMLElementGenerator.getInstance(context.getProject()).createYamlKeyValue("foo", "b");
                 dummyKV.setValue(keyValue.getValue());
             }
@@ -118,8 +119,8 @@ public class YamlKeyInsertHandler implements InsertHandler<LookupElement> {
         }
     }
 
-    private void deleteLookupPlain(InsertionContext context) {
-        Document document = context.getDocument();
+    private void deleteLookupPlain(final InsertionContext context) {
+        final Document document = context.getDocument();
         document.deleteString(context.getStartOffset(), context.getTailOffset());
         context.commitDocument();
     }
@@ -127,9 +128,7 @@ public class YamlKeyInsertHandler implements InsertHandler<LookupElement> {
     @NotNull
     private String getSuggestionReplacementWithCaret(final Module module, final Suggestion suggestion,
                                                      final String existingIndentation, final String indentPerLevel) {
-
         final List<? extends OriginalNameProvider> matchesTopFirst = suggestion.getMatchesForReplacement();
-//        int i = 0; do { OriginalNameProvider nameProvider = matchesTopFirst.get(i); //code i++; } while (i < matchesTopFirst.size());
 
         final StringBuilder builder = new StringBuilder();
         final AtomicInteger count = new AtomicInteger(0);
@@ -144,7 +143,7 @@ public class YamlKeyInsertHandler implements InsertHandler<LookupElement> {
         builder.delete(0, existingIndentation.length() + 1);
 
         final String indentForNextLevel = getOverallIndent(existingIndentation, indentPerLevel, matchesTopFirst.size());
-        final String sufix = getPlaceholderSufixWithCaret(module, suggestion, indentForNextLevel);
+        final String sufix = this.getPlaceholderSufixWithCaret(module, suggestion, indentForNextLevel);
 
         builder.append(sufix);
 

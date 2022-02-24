@@ -1,5 +1,6 @@
 package in.oneton.idea.spring.assistant.plugin.suggestion.handler;
 
+import com.github.eltonsandre.plugin.idea.spring.assistant.common.Constants;
 import com.google.common.base.Splitter;
 import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.completion.InsertionContext;
@@ -113,7 +114,7 @@ public class PropertiesKeyInsertHandler implements InsertHandler<LookupElement> 
         if (nodeType == UNDEFINED || nodeType == UNKNOWN_CLASS) {
             return CARET;
         } else if (nodeType.representsLeaf()) {
-            return "=" + CARET;
+            return Constants.EQUALS_SIGN + CARET;
         } else if (nodeType.representsArrayOrCollection()) {
             return "[" + CARET + "]";
         } else if (isArray) {

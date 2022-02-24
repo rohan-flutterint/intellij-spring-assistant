@@ -47,7 +47,7 @@ public class GenericUtil {
     private static final Pattern methodToFragmentConverter = Pattern.compile("(.+)\\.(.+)\\(.*\\)");
 
     public static String typeForDocumentationNavigation(final String type) {
-        return type.replaceAll("\\$", PROP_DOT);
+        return type.replace("\\$", PROP_DOT);
     }
 
     public static void updateClassNameAsJavadocHtml(final StringBuilder buffer, final String type) {
@@ -162,8 +162,8 @@ public class GenericUtil {
         return type;
     }
 
-    public static String dotDelimitedOriginalNames(
-            final List<? extends SuggestionNode> matchesTopFirstTillParentNode, final SuggestionNode currentNode) {
+    public static String dotDelimitedOriginalNames(final List<? extends SuggestionNode> matchesTopFirstTillParentNode,
+                                                   final SuggestionNode currentNode) {
         final StringBuilder builder = new StringBuilder();
 
         for (final SuggestionNode aMatchesTopFirstTillParentNode : matchesTopFirstTillParentNode) {
@@ -193,7 +193,7 @@ public class GenericUtil {
                 builder.append(originalName);
                 final boolean appendDot = i < matches.size() - 1;
                 if (appendDot) {
-                    builder.append(".");
+                    builder.append(PROP_DOT);
                 }
             }
         }
@@ -202,11 +202,7 @@ public class GenericUtil {
 
     @NotNull
     public static String getIndent(final String indent, final int numOfHops) {
-        if (numOfHops == 0) {
-            return StringUtils.EMPTY;
-        }
-
-        return String.valueOf(indent).repeat(Math.max(0, numOfHops));
+        return numOfHops == 0 ? StringUtils.EMPTY : String.valueOf(indent).repeat(Math.max(0, numOfHops));
     }
 
     @NotNull
@@ -223,16 +219,23 @@ public class GenericUtil {
     }
 
     public static Optional<String> getKeyNameOfObject(final PsiElement psiElement) {
-        return Optional.of(psiElement).filter(el -> el instanceof YAMLKeyValue)
-                .map(YAMLKeyValue.class::cast).map(YAMLKeyValue::getName);
+        return Optional.of(psiElement)
+                .filter(YAMLKeyValue.class::isInstance)
+                .map(YAMLKeyValue.class::cast)
+                .map(YAMLKeyValue::getName);
+    }
+
+    public static List<String> getKey(final String elementVal) {
+        final String ancestralStr = elementVal.replaceAll("\\[\\d+]", StringUtils.EMPTY);
+        return Splitter.on(".").splitToList(ancestralStr);
     }
 
     public static List<String> getAncestralKey(final String elementVal) {
-        final String ancestralStr = elementVal.replaceAll("\\[\\d+]", "");
-        final List<String> split = Splitter.on(".").splitToList(ancestralStr);
+        final List<String> split = getKey(elementVal);
         if (split.size() == 1) {
             return null;
         }
         return split.subList(0, split.size() - 1);
     }
+
 }

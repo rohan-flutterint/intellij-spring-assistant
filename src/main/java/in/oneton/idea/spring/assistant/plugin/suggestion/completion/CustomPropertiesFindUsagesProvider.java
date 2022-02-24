@@ -90,7 +90,7 @@ public class CustomPropertiesFindUsagesProvider implements FindUsagesProvider {
 
         final PsiFile file = myElement.getContainingFile();
         final SuggestionNode target = matchedNodesFromRootTillLeaf.get(matchedNodesFromRootTillLeaf.size() - 1);
-        return new ReferenceProxyElement(file.getManager(), file.getLanguage(), targetNavigationPathDotDelimited, target, value);
+        return new ReferenceProxyElement(file.getManager(), file.getLanguage(), targetNavigationPathDotDelimited, target, false, value);
     }
 
 }

@@ -1,10 +1,12 @@
 package in.oneton.idea.spring.assistant.plugin.suggestion.completion;
 
+import com.github.eltonsandre.plugin.idea.spring.assistant.common.Constants;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.CompletionUtilCore;
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.lang.properties.psi.impl.PropertyValueImpl;
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.PsiComment;
 import com.intellij.psi.PsiElement;
@@ -50,7 +52,12 @@ class PropertiesCompletionProvider extends CompletionProvider<CompletionParamete
         final PsiElement elementContext = element.getContext();
         final String textContext = GenericUtil.truncateIdeaDummyIdentifier(Objects.requireNonNull(elementContext).getText());
 
-        final List<String> ancestralKeys = GenericUtil.getAncestralKey(textContext);
+        final List<String> ancestralKeys;
+        if (elementContext instanceof PropertyValueImpl) {
+            ancestralKeys = GenericUtil.getKey(textContext.replace(Constants.EQUALS_SIGN, StringUtils.EMPTY));
+        } else {
+            ancestralKeys = GenericUtil.getAncestralKey(textContext);
+        }
 
         final String origin = GenericUtil.truncateIdeaDummyIdentifier(element);
         final String queryWithDotDelimitedPrefixes = this.getQueryWithDotDelimitedPrefixes(origin);

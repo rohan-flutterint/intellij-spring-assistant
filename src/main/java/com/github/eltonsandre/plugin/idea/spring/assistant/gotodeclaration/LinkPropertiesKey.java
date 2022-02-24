@@ -19,7 +19,7 @@ public class LinkPropertiesKey implements GotoDeclarationHandler {
         }
 
         if (sourceElement instanceof PsiJavaToken) {
-            return LinkGoToFilePropertieKey.toPropertieKey(sourceElement);
+            return LinkGoToFilePropertieKey.javaToPropertieKey(sourceElement);
         }
 
         if (YAMLLanguage.INSTANCE.is(sourceElement.getLanguage())) {

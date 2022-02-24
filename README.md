@@ -21,7 +21,8 @@
    would show `server.port` as a suggestion
 4. Quick documentation for groups & properties (not all groups & properties will have documentation, depends on whether the original author specified
    documentation or not for any given element)
-   ![Autocomplete in action](https://github.com/eltonsandre/intellij-spring-assistant/blob/feature/link-to-properties/demo/autocomplete-config.gif?raw=true)
+
+![Autocomplete in action](https://github.com/eltonsandre/intellij-spring-assistant/blob/feature/link-to-properties/demo/autocomplete-config.gif?raw=true)
 
 ### Link to configuration properties
 
