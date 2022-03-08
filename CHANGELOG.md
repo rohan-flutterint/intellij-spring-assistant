@@ -1,3 +1,12 @@
+### Since 1.2.2 (07 Mar 2021):
+
+- Fixed Bootstrap indexed metadata:
+    - Index Out Of Bounds error
+    - Rehashing - Equal objects must have equal hashcodes
+- Fixed go to config
+- Fixed auto complete yml and properties key
+- Fixed configs documentation
+
 ### Since 1.2.0 (25 Apr 2021):
 
 - Fixed bugs

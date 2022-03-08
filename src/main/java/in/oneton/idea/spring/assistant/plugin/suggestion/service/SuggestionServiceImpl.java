@@ -101,16 +101,16 @@ public class SuggestionServiceImpl implements SuggestionService {
                     final StopWatch moduleTimer = new StopWatch();
                     moduleTimer.start();
 
+                    this.indexingInProgress = false;
                     try {
-                        this.indexingInProgress = false;
                         final OrderEnumerator moduleOrderEnumerator = OrderEnumerator.orderEntries(this.module);
-                        final List<MetadataContainerInfo> newModuleContainersToProcess = this.computeNewContainersToProcess(
-                                moduleOrderEnumerator);
+
+                        final List<MetadataContainerInfo> newModuleContainersToProcess = this.computeNewContainersToProcess(moduleOrderEnumerator);
                         final List<MetadataContainerInfo> moduleContainersToRemove = this.computeContainersToRemove(moduleOrderEnumerator);
                         this.processContainers(newModuleContainersToProcess, moduleContainersToRemove);
-                        this.indexingInProgress = true;
 
                     } finally {
+                        this.indexingInProgress = true;
                         moduleTimer.stop();
                         LogUtil.debug(() -> log.debug("<-- Indexing took " + moduleTimer + " for module " + this.module.getName()));
                     }
@@ -304,10 +304,12 @@ public class SuggestionServiceImpl implements SuggestionService {
 
                 if (looksFresh) {
                     try {
-                        this.moduleNameToSeenContainerPathToContainerInfo.put(metadataContainerInfo.getContainerArchiveOrFileRef(), metadataContainerInfo);
+                        this.moduleNameToSeenContainerPathToContainerInfo
+                                .put(metadataContainerInfo.getContainerArchiveOrFileRef(), metadataContainerInfo);
                     } catch (final IllegalArgumentException exception) {
-                        if (!metadataContainerInfo.equals(this.moduleNameToSeenContainerPathToContainerInfo.get(metadataContainerInfo.getContainerArchiveOrFileRef()))) {
-                            throw exception;
+                        if (!metadataContainerInfo.equals(
+                                this.moduleNameToSeenContainerPathToContainerInfo.get(metadataContainerInfo.getContainerArchiveOrFileRef()))) {
+                            LogUtil.debug(() -> log.error(exception));
                         }
                     }
                 }

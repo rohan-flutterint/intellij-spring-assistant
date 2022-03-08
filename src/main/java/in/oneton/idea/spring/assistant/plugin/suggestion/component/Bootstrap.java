@@ -10,24 +10,17 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManagerListener;
-import com.intellij.openapi.util.Disposer;
-import com.intellij.util.messages.MessageBusConnection;
+import com.intellij.openapi.startup.StartupActivity;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Objects;
 
 import static com.intellij.openapi.compiler.CompilerTopics.COMPILATION_STATUS;
 
-public class Bootstrap implements ProjectManagerListener {
+public class Bootstrap implements StartupActivity.DumbAware {
 
     private static final Logger log = Logger.getInstance(Bootstrap.class);
 
-    private MessageBusConnection connection;
-
     @Override
-    public void projectOpened(@NotNull final Project project) {
-        final var service = SuggestionIndexerProjectService.getInstance(project);
+    public void runActivity(@NotNull final Project project) {
         LogUtil.debug(() -> log.debug("Subscribing to compilation events for project " + project.getName()));
 
         final var indexTask = new Task.Backgroundable(project, "Indexing spring configuration metadata") {
@@ -38,7 +31,7 @@ public class Bootstrap implements ProjectManagerListener {
                     LogUtil.debug(() -> log.debug("Project " + project.getName() + " is opened, indexing will start"));
 
                     try {
-                        service.index();
+                        SuggestionIndexerProjectService.getInstance(project).index();
                     } finally {
                         LogUtil.debug(() -> log.debug("Indexing complete for project " + project.getName()));
                     }
@@ -47,47 +40,35 @@ public class Bootstrap implements ProjectManagerListener {
         };
 
         indexTask.setCancelText("Stop Loading").queue();
-
         ProgressManager.getInstance().run(indexTask);
 
-        try {
+        final var compilationStatusListener = new CompilationStatusListener() {
+            @Override
+            public void compilationFinished(final boolean aborted, final int errors, final int warnings,
+                                            @NotNull final CompileContext compileContext) {
+                LogUtil.debug(() -> log.debug("Received compilation status event for project " + project.getName()));
 
-            this.connection = project.getMessageBus().connect();
-            this.connection.subscribe(COMPILATION_STATUS, new CompilationStatusListener() {
+                if (errors == 0) {
+                    final var compileScope = compileContext.getCompileScope();
+                    var service = SuggestionIndexerProjectService.getInstance(project);
 
-                @Override
-                public void compilationFinished(final boolean aborted, final int errors, final int warnings,
-                                                @NotNull final CompileContext compileContext) {
-                    LogUtil.debug(() -> log.debug("Received compilation status event for project " + project.getName()));
-
-                    if (errors == 0) {
-                        final var projectCompileScope = compileContext.getProjectCompileScope();
-                        final var compileScope = compileContext.getCompileScope();
-
-                        if (projectCompileScope == compileScope) {
-                            service.index();
-                        } else {
-                            service.index(compileContext.getCompileScope().getAffectedModules());
-                        }
-                        LogUtil.debug(() -> log.debug("Compilation status processed for project " + project.getName()));
+                    if (compileContext.getProjectCompileScope() == compileScope) {
+                        service.index();
+                    } else {
+                        service.index(compileScope.getAffectedModules());
                     }
+                    LogUtil.debug(() -> log.debug("Compilation status processed for project " + project.getName()));
                 }
-            });
+            }
+        };
+
+        try {
+            project.getMessageBus().connect().subscribe(COMPILATION_STATUS, compilationStatusListener);
 
             LogUtil.debug(() -> log.debug("Subscribe to compilation events for project " + project.getName()));
         } catch (final Throwable e) { //NOSONAR
             log.error("Failed to subscribe to compilation events for project " + project.getName(), e);
         }
-    }
-
-
-    @Override
-    public void projectClosed(@NotNull final Project project) {
-        log.warn("Need to remove current project from index: " + project.getName());
-        if (Objects.nonNull(this.connection)) {
-            this.connection.disconnect();
-        }
-        Disposer.dispose(project);
     }
 
 }

@@ -1,14 +1,13 @@
 <idea-plugin>
 
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity
+                implementation="in.oneton.idea.spring.assistant.plugin.suggestion.component.MavenReIndexingDependencyChangeSubscriber"/>
+    </extensions>
+
     <extensions defaultExtensionNs="spring.assistant.initializr">
         <moduleBuilderPostProcessor
                 implementation="in.oneton.idea.spring.assistant.plugin.initializr.MavenModuleBuilderPostProcessor"/>
     </extensions>
-
-    <projectListeners>
-        <listener
-                class="in.oneton.idea.spring.assistant.plugin.suggestion.component.MavenReIndexingDependencyChangeSubscriber"
-                topic="com.intellij.openapi.project.ProjectManagerListener"/>
-    </projectListeners>
 
 </idea-plugin>

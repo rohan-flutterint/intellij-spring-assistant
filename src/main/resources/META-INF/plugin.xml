@@ -32,19 +32,15 @@
 
     <depends config-file="maven.xml" optional="true">org.jetbrains.idea.maven</depends>
     <depends config-file="gradle.xml" optional="true">com.intellij.gradle</depends>
-    <!--    <depends config-file="gradle.xml" optional="true">org.jetbrains.plugins.gradle</depends>-->
 
     <extensionPoints>
         <extensionPoint qualifiedName="spring.assistant.initializr.moduleBuilderPostProcessor"
                         interface="in.oneton.idea.spring.assistant.plugin.initializr.ModuleBuilderPostProcessor"/>
     </extensionPoints>
 
-    <projectListeners>
-        <listener class="in.oneton.idea.spring.assistant.plugin.suggestion.component.Bootstrap"
-                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
-    </projectListeners>
-
     <extensions defaultExtensionNs="com.intellij">
+        <backgroundPostStartupActivity implementation="in.oneton.idea.spring.assistant.plugin.suggestion.component.Bootstrap"/>
+
         <moduleBuilder id="spring-assistant-module-initializr" order="last"
                        builderClass="in.oneton.idea.spring.assistant.plugin.initializr.InitializrModuleBuilder"/>
 

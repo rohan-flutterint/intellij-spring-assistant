@@ -41,6 +41,7 @@ public class GradleReindexingProjectDataService extends AbstractProjectDataServi
     public void onSuccessImport(@NotNull final Collection<DataNode<ModuleData>> imported,
                                 @Nullable final ProjectData projectData, @NotNull final Project project,
                                 @NotNull final IdeModelsProvider modelsProvider) {
+
         if (projectData != null) {
             debug(() -> log.debug("Gradle dependencies are updated for project, will trigger indexing via dumbservice for project " + project.getName()));
 
@@ -49,23 +50,19 @@ public class GradleReindexingProjectDataService extends AbstractProjectDataServi
                 final var service = SuggestionIndexerProjectService.getInstance(project);
 
                 try {
-                    final Module[] validModules = stream(modelsProvider.getModules()).filter(module -> {
-                        final String externalRootProjectPath = getExternalRootProjectPath(module);
-                        return externalRootProjectPath != null && externalRootProjectPath
-                                .equals(projectData.getLinkedExternalProjectPath());
-                    }).toArray(Module[]::new);
+                    final Module[] validModules = stream(modelsProvider.getModules())
+                            .filter(module -> projectData.getLinkedExternalProjectPath().equals(getExternalRootProjectPath(module)))
+                            .toArray(Module[]::new);
 
                     if (validModules.length > 0) {
                         service.index(validModules);
                     } else {
-                        debug(() -> log.debug(
-                                "None of the modules " + moduleNamesAsStrCommaDelimited(modelsProvider.getModules(),
-                                        true) + " are relevant for indexing, skipping for project " + project
-                                        .getName()));
+                        debug(() -> log.debug("None of the modules " + moduleNamesAsStrCommaDelimited(modelsProvider.getModules(), Boolean.TRUE) +
+                                " are relevant for indexing, skipping for project " + project.getName()));
                     }
                 } catch (final Throwable e) {
-                    log.error("Error occurred while indexing project " + project.getName() + " & modules "
-                            + moduleNamesAsStrCommaDelimited(modelsProvider.getModules(), false), e);
+                    log.error("Error occurred while indexing project " + project.getName() + " & modules " +
+                            moduleNamesAsStrCommaDelimited(modelsProvider.getModules(), Boolean.FALSE), e);
                 }
             });
         }

@@ -487,8 +487,12 @@ public class MetadataNonPropertySuggestionNode extends MetadataSuggestionNode {
         final MetadataSuggestionNode childNode = MetadataPropertySuggestionNode.newInstance(originalName, property, this, belongsTo);
 
         final String nameSanitised = SuggestionNode.sanitise(originalName);
-        this.childLookup.put(nameSanitised, childNode);
-        this.childrenTrie.put(nameSanitised, childNode);
+        try {
+            this.childLookup.put(nameSanitised, childNode);
+            this.childrenTrie.put(nameSanitised, childNode);
+        } catch (final IllegalArgumentException exception) {
+            log.error(exception);
+        }
     }
 
     private MetadataNonPropertySuggestionNode addChildren(final String[] rawPathSegments, final int startIndex,
